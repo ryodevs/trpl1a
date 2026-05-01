@@ -1,0 +1,417 @@
+/* ============================================
+   TRPL 1A - Styles
+   Modern Design Platform Landing Page
+   ============================================ */
+
+:root {
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+  --color-accent: #f4b01e;
+  --color-bg: #f9f9f9;
+  --color-border: #e0e0e0;
+  --color-text-light: #666666;
+  --color-text-muted: #999999;
+  
+  --font-display: 'Courier Prime', monospace;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  
+  --transition-fast: 200ms ease-in-out;
+  --transition-base: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Grid Background Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+
+.container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  margin-bottom: auto;
+  z-index: 100;
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all var(--transition-base);
+}
+
+.header__brand:hover {
+  background-color: var(--color-text-light);
+  transform: translateY(-2px);
+}
+
+.brand-icon {
+  font-weight: 800;
+  color: var(--color-accent);
+  font-size: 16px;
+  font-family: monospace;
+}
+
+.brand-text {
+  font-weight: 700;
+}
+
+/* ============================================
+   Navigation
+   ============================================ */
+
+.nav {
+  display: flex;
+  gap: var(--spacing-lg);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav__link {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-accent);
+  transition: width var(--transition-base);
+}
+
+.nav__link:hover {
+  color: var(--color-primary);
+}
+
+.nav__link:hover::after,
+.nav__link--active::after {
+  width: 100%;
+}
+
+.nav__link--active {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+
+.hero {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.hero__content {
+  z-index: 10;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.hero__intro {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  animation: fadeInUp 0.8s ease-out 0.1s both;
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-size: 120px;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 0.95;
+  margin: var(--spacing-lg) 0 0 0;
+  color: var(--color-primary);
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero__accent {
+  color: var(--color-text-light);
+}
+
+.hero__subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--color-text-light);
+  margin: var(--spacing-md) 0 0 0;
+  text-transform: uppercase;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+.hero__cta {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-xl);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero__cta:hover {
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.hero__cta:active {
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   Decorative Elements
+   ============================================ */
+
+.decorative {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  font-size: 24px;
+  color: var(--color-primary);
+  filter: drop-shadow(2px 2px 0 var(--color-text-muted));
+  animation: float 6s ease-in-out infinite;
+}
+
+.star--lg {
+  top: 15%;
+  left: 5%;
+  font-size: 28px;
+  animation-delay: 0s;
+}
+
+.star--sm {
+  bottom: 20%;
+  right: 8%;
+  font-size: 20px;
+  animation-delay: 1s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.footer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 10px;
+  font-weight: 300;
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+  margin-top: auto;
+}
+
+.footer__copyright {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.footer__credit {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    text-align: center;
+  }
+
+  .nav {
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero__title {
+    font-size: 72px;
+  }
+
+  .hero__intro {
+    font-size: 18px;
+  }
+
+  .hero__subtitle {
+    font-size: 12px;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+
+  .star--lg {
+    display: none;
+  }
+
+  .star--sm {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .hero__title {
+    font-size: 48px;
+  }
+
+  .hero__intro {
+    font-size: 16px;
+  }
+
+  .nav {
+    gap: var(--spacing-sm);
+  }
+
+  .nav__link {
+    font-size: 10px;
+  }
+}
