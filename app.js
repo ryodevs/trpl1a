@@ -8,16 +8,12 @@
 
 /* ------------------------------------------------------------------------
    1. KONFIGURASI & DATA AWAL (SEED DATA)
-   Semua data dummy/statis dikumpulkan di sini biar gampang diedit tanpa
-   perlu utak-atik logic di bawahnya.
    ------------------------------------------------------------------------ */
 const CONFIG = {
-
-  // Ganti dua tanggal ini sesuai kalender akademik PNC yang sebenarnya.
   tanggalUTS: "2026-10-12T07:00:00",
   tanggalUAS: "2026-12-14T07:00:00",
+  tanggalLiburSemester: "2026-12-28T00:00:00",
 
-  // 20 nama mahasiswa dummy TRPL 1A (silakan ganti dengan data asli kelas)
   mahasiswa: [
     "Andi Saputra", "Budi Santoso", "Citra Ayu Lestari", "Dewi Anggraini",
     "Eka Prasetyo", "Fajar Ramadhan", "Gita Permatasari", "Hendra Kurniawan",
@@ -26,7 +22,6 @@ const CONFIG = {
     "Qonita Zahra", "Rizky Ramadhani", "Siti Nur Aisyah", "Taufik Hidayat"
   ],
 
-  // Jadwal per hari. "jam" pakai format 24 jam "HH:MM" agar mudah dibandingkan.
   jadwal: {
     Senin: [
       { jam: "07:30-09:10", matkul: "Algoritma & Pemrograman Dasar", dosen: "Bpk. Ahmad Fauzi, S.Kom., M.T.", ruang: "Lab RPL 1" },
@@ -75,8 +70,6 @@ const CONFIG = {
     { nama: "Muhammad Rafi Alfarizi", peran: "Asisten Lab · Algoritma & Pemrograman", inisial: "MR" },
   ],
 
-  // Beberapa tugas contoh untuk pengisian awal (hanya dipakai sekali saat
-  // localStorage masih kosong)
   tugasAwal: [
     { id: "t1", judul: "Laporan Praktikum Basis Data Bab 1", matkul: "Basis Data", deadline: addDays(3), status: "Belum Dikerjakan" },
     { id: "t2", judul: "Tugas Flowchart Program Kalkulator", matkul: "Algoritma & Pemrograman Dasar", deadline: addDays(1), status: "Sedang Dikerjakan" },
@@ -85,7 +78,6 @@ const CONFIG = {
   ],
 };
 
-// Util kecil buat bikin tanggal seed relatif terhadap hari ini
 function addDays(n) {
   const d = new Date();
   d.setDate(d.getDate() + n);
@@ -96,10 +88,9 @@ function addDays(n) {
 
 /* ------------------------------------------------------------------------
    2. LAPISAN "DATABASE" (localStorage)
-   Semua akses baca/tulis data lewat objek DB ini. Kalau nanti mau pindah
-   ke Firebase Firestore, cukup ubah isi method get()/set() di bawah —
-   pemanggilan DB.getTugas(), DB.setTugas(...) dsb di kode lain TIDAK perlu
-   diubah sama sekali.
+   Semua akses baca/tulis lewat objek DB ini. Untuk pindah ke Firebase,
+   cukup ubah isi method di bawah — pemanggilan DB.xxx() di kode lain
+   tidak perlu diubah sama sekali.
    ------------------------------------------------------------------------ */
 const DB = {
   _read(key, fallback) {
@@ -122,7 +113,6 @@ const DB = {
 
   getPoin() {
     // GANTI DENGAN FIREBASE DI SINI
-    // Contoh nanti: return getDocs(collection(db, "trpl1a_leaderboard"))
     return this._read("trpl1a_poin", seedPoin());
   },
   setPoin(obj) { this._write("trpl1a_poin", obj); },
@@ -130,16 +120,13 @@ const DB = {
   getAnon() { return this._read("trpl1a_anon", []); },
   setAnon(list) { this._write("trpl1a_anon", list); },
 
-  getTheme() { return this._read("trpl1a_theme", "dark"); },
+  getTheme() { return this._read("trpl1a_theme", "light"); },
   setTheme(v) { this._write("trpl1a_theme", v); },
 };
 
-// Poin awal acak biar leaderboard tidak kosong saat pertama dibuka
 function seedPoin() {
   const obj = {};
-  CONFIG.mahasiswa.forEach((nama) => {
-    obj[nama] = Math.floor(Math.random() * 40) + 5;
-  });
+  CONFIG.mahasiswa.forEach((nama) => { obj[nama] = Math.floor(Math.random() * 40) + 5; });
   return obj;
 }
 
@@ -148,25 +135,33 @@ function seedPoin() {
    3. STATE & HELPER UMUM
    ------------------------------------------------------------------------ */
 const HARI_LIST = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
-const TABS = [
-  { id: "jadwal", label: "Jadwal", icon: "📅" },
-  { id: "tugas", label: "Tugas", icon: "📝" },
-  { id: "materi", label: "Materi", icon: "📚" },
-  { id: "dosen", label: "Dosen", icon: "👨‍🏫" },
-  { id: "random", label: "Acak", icon: "🎡" },
-  { id: "anon", label: "Anonim", icon: "🕵️" },
-  { id: "leaderboard", label: "Ranking", icon: "🏆" },
-];
 
-let hariAktifFilter = "Senin"; // default filter jadwal mobile
-let tugasEditId = null;
+const TABS = [
+  { id: "overview", label: "Ringkasan", icon: "i-grid", title: "Ringkasan Kelas", subtitle: "Info lengkap aktivitas mingguan TRPL 1A" },
+  { id: "jadwal", label: "Jadwal", icon: "i-calendar", title: "Jadwal Kuliah", subtitle: "Susunan mata kuliah TRPL 1A minggu ini" },
+  { id: "tugas", label: "Tugas", icon: "i-check-square", title: "Tugas & Deadline", subtitle: "Pantau progres dan tenggat waktu tugas" },
+  { id: "materi", label: "Materi", icon: "i-book", title: "Repository Materi", subtitle: "Kumpulan bahan ajar tiap mata kuliah" },
+  { id: "dosen", label: "Dosen", icon: "i-users", title: "Dosen & Aslab", subtitle: "Kontak pengampu mata kuliah TRPL 1A" },
+  { id: "random", label: "Acak", icon: "i-shuffle", title: "Roda Keberuntungan", subtitle: "Pengacak nama untuk sesi presentasi" },
+  { id: "anon", label: "Anonim", icon: "i-message", title: "Kotak Saran Anonim", subtitle: "Sampaikan pertanyaan tanpa nama" },
+  { id: "leaderboard", label: "Ranking", icon: "i-award", title: "Leaderboard Keaktifan", subtitle: "Peringkat poin partisipasi kelas" },
+];
+const BOTTOM_TAB_IDS = ["overview", "jadwal", "tugas", "random", "leaderboard"];
+
+let hariAktifFilter = "Senin";
+let jadwalIdx = 0;
+
+function icon(name, cls = "icon") {
+  return `<svg class="${cls}"><use href="#${name}"/></svg>`;
+}
 
 function toast(msg, type = "info") {
   const box = document.getElementById("toastBox");
   const el = document.createElement("div");
-  const color = type === "success" ? "border-green-400" : type === "error" ? "border-red-400" : "border-pnc-gold";
-  el.className = `surface bg-canvas-panel border ${color} rounded-xl px-4 py-3 text-sm shadow-card animate-[fadeUp_.3s_ease]`;
-  el.textContent = msg;
+  const color = type === "success" ? "border-green-300" : type === "error" ? "border-red-300" : "border-line";
+  el.className = `bg-white border ${color} rounded-xl px-4 py-3 text-sm text-ink shadow-card flex items-center gap-2`;
+  const iconName = type === "success" ? "i-check-circle" : type === "error" ? "i-alert" : "i-circle";
+  el.innerHTML = `${icon(iconName, "icon icon-sm text-pnc-blueLight shrink-0")}<span>${msg}</span>`;
   box.appendChild(el);
   setTimeout(() => {
     el.style.transition = "opacity .4s ease, transform .4s ease";
@@ -187,51 +182,8 @@ function formatSisaWaktu(ms) {
   return `${String(jam).padStart(2, "0")}:${String(menit).padStart(2, "0")}:${String(detik).padStart(2, "0")}`;
 }
 
-
-/* ------------------------------------------------------------------------
-   4. JAM & TANGGAL REAL-TIME + COUNTDOWN UTS/UAS
-   ------------------------------------------------------------------------ */
-function tickClock() {
-  const now = new Date();
-  document.getElementById("clockTime").textContent = now.toLocaleTimeString("id-ID", { hour12: false });
-  document.getElementById("clockDate").textContent = now.toLocaleDateString("id-ID", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
-
-  const uts = formatSisaWaktu(new Date(CONFIG.tanggalUTS) - now);
-  const uas = formatSisaWaktu(new Date(CONFIG.tanggalUAS) - now);
-  document.getElementById("cdUTS").textContent = uts || "Sudah berlangsung";
-  document.getElementById("cdUAS").textContent = uas || "Sudah berlangsung";
-
-  renderStatusKelasSekarang(now);
-  renderCountdownTugas(); // refresh countdown tiap kartu tugas tiap detik
-}
-
-// Menentukan & menampilkan mata kuliah yang SEDANG berlangsung sekarang
-function renderStatusKelasSekarang(now) {
-  const namaHari = now.toLocaleDateString("id-ID", { weekday: "long" });
-  const hariKey = HARI_LIST.find((h) => h.toLowerCase() === namaHari.toLowerCase());
-  const el = document.getElementById("statusKelasSekarang");
-  if (!hariKey) {
-    el.innerHTML = `<span class="text-gray-400">Akhir pekan — waktunya istirahat & review materi ✨</span>`;
-    return;
-  }
-  const jadwalHariIni = CONFIG.jadwal[hariKey] || [];
-  const menit = now.getHours() * 60 + now.getMinutes();
-  const sedang = jadwalHariIni.find((item) => {
-    const [mulai, selesai] = item.jam.split("-");
-    return menitDariString(mulai) <= menit && menit <= menitDariString(selesai);
-  });
-
-  if (sedang) {
-    el.innerHTML = `<span class="pulse-dot"></span>
-      <span>Sedang berlangsung: <strong class="text-pnc-gold">${sedang.matkul}</strong> · ${sedang.ruang}</span>`;
-  } else {
-    const berikutnya = jadwalHariIni.find((item) => menitDariString(item.jam.split("-")[0]) > menit);
-    el.innerHTML = berikutnya
-      ? `<span class="text-gray-400">Tidak ada kelas saat ini. Berikutnya: <strong class="text-white">${berikutnya.matkul}</strong> (${berikutnya.jam})</span>`
-      : `<span class="text-gray-400">Kelas hari ini sudah selesai. Sampai jumpa besok! 👋</span>`;
-  }
+function inisial(nama) {
+  return nama.split(" ").slice(0, 2).map((s) => s[0]).join("").toUpperCase();
 }
 
 function menitDariString(hhmm) {
@@ -241,7 +193,28 @@ function menitDariString(hhmm) {
 
 
 /* ------------------------------------------------------------------------
-   5. RENDER: JADWAL KULIAH
+   4. JAM REAL-TIME + STATUS NOTIFIKASI
+   ------------------------------------------------------------------------ */
+function tickClock() {
+  const now = new Date();
+  document.getElementById("clockTime").textContent = now.toLocaleTimeString("id-ID", { hour12: false });
+  document.getElementById("clockDate").textContent = now.toLocaleDateString("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+  renderCountdownTugas();
+  renderJadwalCarousel(); // ringan, cukup dipanggil tiap detik agar badge "berlangsung" akurat
+}
+
+function cekNotifikasi() {
+  const list = DB.getTugas();
+  const now = new Date();
+  const ada = list.some((t) => t.status !== "Selesai" && new Date(t.deadline) - now < 1000 * 60 * 60 * 24);
+  document.getElementById("notifDot").classList.toggle("hidden", !ada);
+}
+
+
+/* ------------------------------------------------------------------------
+   5. RENDER: JADWAL (halaman penuh)
    ------------------------------------------------------------------------ */
 function renderJadwal() {
   const now = new Date();
@@ -251,15 +224,14 @@ function renderJadwal() {
   const list = document.getElementById("jadwalList");
   list.innerHTML = "";
 
-  // Di mobile, tampilkan hanya hari yang difilter. Di desktop, tampilkan semua.
-  const isMobile = window.innerWidth < 768;
+  const isMobile = window.innerWidth < 1024;
   const hariUntukDitampilkan = isMobile ? [hariAktifFilter] : HARI_LIST;
 
   hariUntukDitampilkan.forEach((hari) => {
     const items = CONFIG.jadwal[hari] || [];
     const groupWrap = document.createElement("div");
-    groupWrap.className = "sm:col-span-2 md:col-span-1";
-    groupWrap.innerHTML = `<p class="text-xs uppercase tracking-widest text-pnc-gold font-semibold mb-2 mt-1">${hari}</p>`;
+    groupWrap.className = "sm:col-span-2 lg:col-span-1";
+    groupWrap.innerHTML = `<p class="text-xs uppercase tracking-widest text-pnc-blueLight font-semibold mb-2 mt-1">${hari}</p>`;
 
     items.forEach((item) => {
       const isToday = hari.toLowerCase() === namaHariNow.toLowerCase();
@@ -267,17 +239,17 @@ function renderJadwal() {
       const isAktif = isToday && menitDariString(mulai) <= menit && menit <= menitDariString(selesai);
 
       const card = document.createElement("div");
-      card.className = `card-hover surface bg-canvas-panel border border-white/10 rounded-xl p-4 mb-2 ${isAktif ? "jadwal-aktif" : ""}`;
+      card.className = `card-hover bg-white border border-line rounded-2xl p-4 mb-2 ${isAktif ? "jadwal-aktif" : ""}`;
       card.innerHTML = `
         <div class="flex items-start justify-between gap-2">
-          <div>
-            <p class="font-semibold text-sm sm:text-base">${item.matkul}</p>
-            <p class="text-xs text-gray-400 mt-1">${item.dosen}</p>
-            <p class="text-xs text-gray-500 mt-0.5">📍 ${item.ruang}</p>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm sm:text-base text-ink">${item.matkul}</p>
+            <p class="text-xs text-muted mt-1">${item.dosen}</p>
+            <p class="text-xs text-muted mt-1 flex items-center gap-1">${icon("i-pin", "icon icon-sm")} ${item.ruang}</p>
           </div>
           <div class="text-right shrink-0">
-            <p class="font-mono text-xs sm:text-sm text-pnc-gold">${item.jam}</p>
-            ${isAktif ? '<span class="text-[10px] text-green-400 font-semibold">● Berlangsung</span>' : ""}
+            <p class="font-mono text-xs sm:text-sm text-pnc-blueLight">${item.jam}</p>
+            ${isAktif ? `<span class="inline-flex items-center gap-1 text-[10px] text-green-600 font-semibold mt-1"><span class="pulse-dot"></span>Berlangsung</span>` : ""}
           </div>
         </div>`;
       groupWrap.appendChild(card);
@@ -290,11 +262,10 @@ function renderJadwal() {
 function renderHariFilter() {
   const wrap = document.getElementById("hariFilter");
   wrap.innerHTML = "";
-  wrap.classList.add("md:hidden"); // filter hari cuma perlu di mobile
   HARI_LIST.forEach((hari) => {
     const btn = document.createElement("button");
     btn.textContent = hari.slice(0, 3);
-    btn.className = `px-2.5 py-1 rounded-full border ${hari === hariAktifFilter ? "bg-pnc-gold text-pnc-blue border-pnc-gold font-semibold" : "border-white/15 text-gray-300"}`;
+    btn.className = `px-2.5 py-1 rounded-full border ${hari === hariAktifFilter ? "bg-pnc-blueLight text-white border-pnc-blueLight font-semibold" : "border-line text-muted"}`;
     btn.onclick = () => { hariAktifFilter = hari; renderHariFilter(); renderJadwal(); };
     wrap.appendChild(btn);
   });
@@ -302,93 +273,145 @@ function renderHariFilter() {
 
 
 /* ------------------------------------------------------------------------
-   6. RENDER: TUGAS & DEADLINE (+ countdown per kartu)
+   6. RENDER: KARTU JADWAL CAROUSEL (di tab Overview)
+   ------------------------------------------------------------------------ */
+function jadwalHariIniList() {
+  const now = new Date();
+  const namaHari = now.toLocaleDateString("id-ID", { weekday: "long" });
+  const hariKey = HARI_LIST.find((h) => h.toLowerCase() === namaHari.toLowerCase());
+  return hariKey ? CONFIG.jadwal[hariKey] || [] : [];
+}
+
+function renderJadwalCarousel() {
+  const items = jadwalHariIniList();
+  const wrap = document.getElementById("jadwalCarousel");
+  const dotsWrap = document.getElementById("jadwalDots");
+  if (!wrap) return;
+
+  if (items.length === 0) {
+    wrap.innerHTML = `<div class="relative z-10">
+      <p class="text-xs uppercase tracking-wide text-white/70">Hari ini</p>
+      <p class="font-display text-lg font-bold mt-2">Tidak ada jadwal kuliah</p>
+      <p class="text-sm text-white/80 mt-1">Waktu yang pas buat review materi minggu ini.</p>
+    </div>`;
+    dotsWrap.innerHTML = "";
+    return;
+  }
+
+  if (jadwalIdx >= items.length) jadwalIdx = 0;
+
+  const now = new Date();
+  const menit = now.getHours() * 60 + now.getMinutes();
+
+  const item = items[jadwalIdx];
+  const [mulai, selesai] = item.jam.split("-");
+  const isAktif = menitDariString(mulai) <= menit && menit <= menitDariString(selesai);
+
+  wrap.innerHTML = `
+    <div class="relative z-10">
+      <div class="flex items-center justify-between">
+        <p class="text-xs uppercase tracking-wide text-white/70">Jadwal ${jadwalIdx + 1} dari ${items.length}</p>
+        ${isAktif ? `<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/15 px-2.5 py-1 rounded-full"><span class="pulse-dot"></span>Berlangsung</span>` : ""}
+      </div>
+      <p class="font-display text-xl sm:text-2xl font-bold mt-3 leading-snug">${item.matkul}</p>
+      <p class="text-sm text-white/85 mt-1.5">${item.dosen}</p>
+      <div class="flex items-center gap-4 mt-4 text-sm text-white/90">
+        <span class="flex items-center gap-1.5">${icon("i-clock", "icon icon-sm")} ${item.jam}</span>
+        <span class="flex items-center gap-1.5">${icon("i-pin", "icon icon-sm")} ${item.ruang}</span>
+      </div>
+    </div>`;
+
+  dotsWrap.innerHTML = items.map((_, i) =>
+    `<span class="w-1.5 h-1.5 rounded-full ${i === jadwalIdx ? "bg-pnc-blueLight w-4" : "bg-line"} transition-all"></span>`
+  ).join("");
+}
+
+
+/* ------------------------------------------------------------------------
+   7. RENDER: TUGAS & DEADLINE
    ------------------------------------------------------------------------ */
 function hitungStatusOtomatis(t) {
-  // Kalau lewat deadline dan belum "Selesai", ubah status jadi "Terlambat"
-  if (t.status !== "Selesai" && new Date(t.deadline) < new Date()) {
-    return "Terlambat";
-  }
+  if (t.status !== "Selesai" && new Date(t.deadline) < new Date()) return "Terlambat";
   return t.status;
 }
 
 function badgeClassStatus(status) {
   switch (status) {
-    case "Selesai": return "bg-green-500/15 text-green-400 border-green-500/30";
-    case "Sedang Dikerjakan": return "bg-blue-500/15 text-blue-300 border-blue-400/30";
-    case "Terlambat": return "bg-red-500/15 text-red-400 border-red-500/30";
-    default: return "bg-yellow-500/15 text-yellow-300 border-yellow-500/30"; // Belum Dikerjakan
+    case "Selesai": return "bg-green-50 text-green-600 border-green-200";
+    case "Sedang Dikerjakan": return "bg-blue-50 text-pnc-blueLight border-blue-200";
+    case "Terlambat": return "bg-red-50 text-red-500 border-red-200";
+    default: return "bg-yellow-50 text-yellow-700 border-yellow-200"; // Belum Dikerjakan
   }
 }
 
+function ambilTugasDenganStatusTerkini() {
+  const list = DB.getTugas().map((t) => ({ ...t, status: hitungStatusOtomatis(t) }));
+  DB.setTugas(list);
+  return list;
+}
+
 function renderTugas() {
-  let list = DB.getTugas().map((t) => ({ ...t, status: hitungStatusOtomatis(t) }));
-  DB.setTugas(list); // simpan balik status otomatis (mis. jadi "Terlambat")
+  let list = ambilTugasDenganStatusTerkini();
 
   const filter = document.getElementById("filterStatus").value;
   if (filter !== "semua") list = list.filter((t) => t.status === filter);
-
-  // Urutkan berdasarkan deadline terdekat
   list.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   const wrap = document.getElementById("tugasList");
   wrap.innerHTML = "";
 
   if (list.length === 0) {
-    wrap.innerHTML = `<p class="text-gray-400 text-sm">Belum ada tugas dengan status ini. 🎉</p>`;
+    wrap.innerHTML = `<p class="text-muted text-sm">Belum ada tugas dengan status ini.</p>`;
     return;
   }
 
   list.forEach((t) => {
     const card = document.createElement("div");
-    card.className = "card-hover surface bg-canvas-panel border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between";
+    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between";
     card.innerHTML = `
       <div class="min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <p class="font-semibold text-sm sm:text-base">${t.judul}</p>
+          <p class="font-semibold text-sm sm:text-base text-ink">${t.judul}</p>
           <span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span>
         </div>
-        <p class="text-xs text-gray-400 mt-1">${t.matkul} · Deadline: ${new Date(t.deadline).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>
+        <p class="text-xs text-muted mt-1">${t.matkul} · Deadline: ${new Date(t.deadline).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>
         <p class="font-mono text-xs mt-1 countdown-tugas" data-deadline="${t.deadline}" data-status="${t.status}"></p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <select data-id="${t.id}" class="ubah-status text-xs surface-2 bg-black/20 border border-white/10 rounded-lg px-2 py-1.5">
+        <select data-id="${t.id}" class="ubah-status text-xs bg-page border border-line rounded-lg px-2 py-1.5 text-ink">
           <option ${t.status === "Belum Dikerjakan" ? "selected" : ""}>Belum Dikerjakan</option>
           <option ${t.status === "Sedang Dikerjakan" ? "selected" : ""}>Sedang Dikerjakan</option>
           <option ${t.status === "Selesai" ? "selected" : ""}>Selesai</option>
           <option ${t.status === "Terlambat" ? "selected" : ""}>Terlambat</option>
         </select>
-        <button data-id="${t.id}" class="hapus-tugas text-red-400 hover:text-red-300 text-xs px-2">Hapus</button>
+        <button data-id="${t.id}" class="hapus-tugas w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50">${icon("i-trash", "icon icon-sm")}</button>
       </div>`;
     wrap.appendChild(card);
   });
 
-  // Pasang event listener setelah elemen dirender (event delegation sederhana)
   wrap.querySelectorAll(".ubah-status").forEach((sel) => {
     sel.addEventListener("change", (e) => ubahStatusTugas(e.target.dataset.id, e.target.value));
   });
   wrap.querySelectorAll(".hapus-tugas").forEach((btn) => {
-    btn.addEventListener("click", (e) => hapusTugas(e.target.dataset.id));
+    btn.addEventListener("click", (e) => hapusTugas(e.currentTarget.dataset.id));
   });
 
   renderCountdownTugas();
 }
 
-// Update teks countdown tiap kartu tugas tanpa render ulang seluruh list
-// (dipanggil tiap detik oleh tickClock supaya ringan & tidak "flicker")
 function renderCountdownTugas() {
   document.querySelectorAll(".countdown-tugas").forEach((el) => {
     const deadline = new Date(el.dataset.deadline);
     const sisa = deadline - new Date();
     if (el.dataset.status === "Selesai") {
-      el.textContent = "✅ Sudah dikumpulkan";
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-green-400";
+      el.textContent = "Sudah dikumpulkan";
+      el.className = "font-mono text-xs mt-1 countdown-tugas text-green-600";
     } else if (sisa <= 0) {
-      el.textContent = "⏰ Waktu habis!";
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-red-400";
+      el.textContent = "Waktu habis";
+      el.className = "font-mono text-xs mt-1 countdown-tugas text-red-500";
     } else {
-      el.textContent = `⏳ Sisa waktu: ${formatSisaWaktu(sisa)}`;
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-pnc-gold";
+      el.textContent = `Sisa waktu ${formatSisaWaktu(sisa)}`;
+      el.className = "font-mono text-xs mt-1 countdown-tugas text-pnc-blueLight";
     }
   });
 }
@@ -402,32 +425,29 @@ function ubahStatusTugas(id, statusBaru) {
   list[idx].status = statusBaru;
   DB.setTugas(list);
 
-  // Kasih poin gamifikasi kalau baru saja ditandai "Selesai"
   if (statusBaru === "Selesai" && statusLama !== "Selesai") {
     tambahPoin(pilihMahasiswaAcakUntukDemo(), 10);
-    toast("Mantap! +10 poin keaktifan 🎉", "success");
+    toast("Tugas ditandai selesai — poin keaktifan bertambah 10", "success");
   }
-  renderTugas();
-  renderLeaderboard();
+  renderAll();
 }
 
 function hapusTugas(id) {
   const list = DB.getTugas().filter((t) => t.id !== id);
   DB.setTugas(list);
-  renderTugas();
   toast("Tugas dihapus", "info");
+  renderAll();
 }
 
-// NOTE: Karena versi ini belum ada sistem login, poin "siapa yang dapat"
-// disimulasikan dengan memilih nama secara acak. Setelah backend/auth siap,
-// ganti fungsi ini agar mengambil nama mahasiswa yang sedang login.
+// Belum ada sistem login, jadi penerima poin disimulasikan acak.
+// Ganti dengan nama mahasiswa yang sedang login setelah backend/auth siap.
 function pilihMahasiswaAcakUntukDemo() {
   return CONFIG.mahasiswa[Math.floor(Math.random() * CONFIG.mahasiswa.length)];
 }
 
 
 /* ------------------------------------------------------------------------
-   7. RENDER: MATERI
+   8. RENDER: MATERI & DOSEN
    ------------------------------------------------------------------------ */
 function renderMateri() {
   const wrap = document.getElementById("materiList");
@@ -435,32 +455,28 @@ function renderMateri() {
   CONFIG.materi.forEach((m) => {
     const card = document.createElement("a");
     card.href = m.link;
-    card.className = "card-hover surface bg-canvas-panel border border-white/10 rounded-xl p-4 flex items-center gap-3";
+    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex items-center gap-3";
     card.innerHTML = `
-      <div class="w-11 h-11 rounded-lg bg-pnc-gold/15 text-pnc-gold flex items-center justify-center font-mono text-[11px] font-bold shrink-0">${m.tipe}</div>
+      <div class="w-11 h-11 rounded-xl bg-blue-50 text-pnc-blueLight flex items-center justify-center font-mono text-[11px] font-bold shrink-0">${m.tipe}</div>
       <div class="min-w-0">
-        <p class="font-medium text-sm truncate">${m.judul}</p>
-        <p class="text-xs text-gray-400 truncate">${m.matkul}</p>
+        <p class="font-medium text-sm text-ink truncate">${m.judul}</p>
+        <p class="text-xs text-muted truncate">${m.matkul}</p>
       </div>`;
     wrap.appendChild(card);
   });
 }
 
-
-/* ------------------------------------------------------------------------
-   8. RENDER: DOSEN & ASLAB
-   ------------------------------------------------------------------------ */
 function renderDosen() {
   const wrap = document.getElementById("dosenList");
   wrap.innerHTML = "";
   CONFIG.dosenAslab.forEach((d) => {
     const card = document.createElement("div");
-    card.className = "card-hover surface bg-canvas-panel border border-white/10 rounded-xl p-4 flex items-center gap-3";
+    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex items-center gap-3";
     card.innerHTML = `
-      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pnc-gold to-pnc-blue flex items-center justify-center font-display font-bold text-sm shrink-0">${d.inisial}</div>
+      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pnc-gold to-pnc-blue flex items-center justify-center font-display font-bold text-sm text-white shrink-0">${d.inisial}</div>
       <div class="min-w-0">
-        <p class="font-medium text-sm">${d.nama}</p>
-        <p class="text-xs text-gray-400">${d.peran}</p>
+        <p class="font-medium text-sm text-ink">${d.nama}</p>
+        <p class="text-xs text-muted">${d.peran}</p>
       </div>`;
     wrap.appendChild(card);
   });
@@ -468,16 +484,11 @@ function renderDosen() {
 
 
 /* ------------------------------------------------------------------------
-   9. RODA KEBERUNTUNGAN (Randomizer nama mahasiswa) — signature feature
-   Dibuat pakai SVG <path> sebagai segmen roda, diputar dengan CSS
-   transform + transition. Sudut kemenangan dihitung mundur dari sudut akhir
-   putaran supaya penunjuk (segitiga di atas) selalu jatuh tepat di nama
-   yang terpilih.
+   9. RODA KEBERUNTUNGAN (Randomizer nama mahasiswa)
    ------------------------------------------------------------------------ */
 let wheelRotation = 0;
 let isSpinning = false;
-
-const WHEEL_COLORS = ["#0A2463", "#F9C80E", "#142850", "#FDE68A", "#061638", "#F9C80E"];
+const WHEEL_COLORS = ["#0A2463", "#2F63E8", "#F9C80E", "#12203D", "#4C7CF0", "#FBDD5E"];
 
 function buildWheelSVG() {
   const svg = document.getElementById("wheel");
@@ -491,9 +502,8 @@ function buildWheelSVG() {
     const endAngle = startAngle + anglePer;
     const path = describeArc(cx, cy, r, startAngle, endAngle);
     const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
-    html += `<path d="${path}" fill="${color}" stroke="#080B1A" stroke-width="0.5"></path>`;
+    html += `<path d="${path}" fill="${color}" stroke="#ffffff" stroke-width="0.6"></path>`;
 
-    // Label nama, diposisikan & dirotasi mengikuti arah segmen
     const midAngle = startAngle + anglePer / 2;
     const labelPos = polarToCartesian(cx, cy, r * 0.62, midAngle);
     html += `<text x="${labelPos.x}" y="${labelPos.y}" font-size="4.6" fill="#fff" font-family="Inter, sans-serif"
@@ -504,7 +514,6 @@ function buildWheelSVG() {
   svg.innerHTML = html;
 }
 
-// Helper trigonometri untuk menggambar potongan lingkaran (arc) SVG
 function polarToCartesian(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
@@ -524,8 +533,6 @@ function spinWheel() {
   const anglePer = 360 / n;
   const idxTerpilih = Math.floor(Math.random() * n);
 
-  // Supaya hasil terasa adil & tidak bisa ditebak, roda diputar penuh
-  // 6-9 kali dulu, baru berhenti pas di tengah segmen nama terpilih.
   const putaranPenuh = 6 + Math.floor(Math.random() * 4);
   const sudutTarget = 360 - (idxTerpilih * anglePer + anglePer / 2);
   wheelRotation += putaranPenuh * 360 + (sudutTarget - (wheelRotation % 360));
@@ -533,29 +540,28 @@ function spinWheel() {
   const svg = document.getElementById("wheel");
   svg.style.transform = `rotate(${wheelRotation}deg)`;
 
-  document.getElementById("spinResult").innerHTML = `<p class="text-gray-400 text-sm animate-pulse">Roda sedang berputar...</p>`;
-  document.getElementById("btnSpin").disabled = true;
-  document.getElementById("btnSpin").classList.add("opacity-60", "cursor-not-allowed");
+  document.getElementById("spinResult").innerHTML = `<p class="text-muted text-sm animate-pulse">Roda sedang berputar...</p>`;
+  const btn = document.getElementById("btnSpin");
+  btn.disabled = true;
+  btn.classList.add("opacity-60", "cursor-not-allowed");
 
-  // Durasi harus sama dengan transition di CSS (#wheel { transition: ... 5s })
   setTimeout(() => {
     const nama = CONFIG.mahasiswa[idxTerpilih];
     document.getElementById("spinResult").innerHTML = `
-      <p class="text-xs text-gray-400">Terpilih:</p>
-      <p class="font-display text-2xl font-extrabold text-pnc-gold">${nama}</p>`;
+      <p class="text-xs text-muted">Terpilih</p>
+      <p class="font-display text-2xl font-extrabold text-pnc-blueLight">${nama}</p>`;
     tambahPoin(nama, 3);
     renderLeaderboard();
     letupkanConfetti();
     isSpinning = false;
-    document.getElementById("btnSpin").disabled = false;
-    document.getElementById("btnSpin").classList.remove("opacity-60", "cursor-not-allowed");
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
   }, 5000);
 }
 
-// Efek confetti ringan pakai div-div kecil, tanpa library eksternal
 function letupkanConfetti() {
-  const warna = ["#F9C80E", "#0A2463", "#FDE68A", "#FFFFFF"];
-  for (let i = 0; i < 40; i++) {
+  const warna = ["#F9C80E", "#0A2463", "#2F63E8", "#FBDD5E"];
+  for (let i = 0; i < 36; i++) {
     const piece = document.createElement("div");
     piece.className = "confetti-piece";
     piece.style.left = Math.random() * 100 + "vw";
@@ -572,26 +578,25 @@ function letupkanConfetti() {
    10. KOTAK SARAN & PERTANYAAN ANONIM
    ------------------------------------------------------------------------ */
 function renderAnon() {
-  const list = DB.getAnon().slice().reverse(); // terbaru di atas
+  const list = DB.getAnon().slice().reverse();
   const wrap = document.getElementById("anonBoard");
   wrap.innerHTML = "";
 
   if (list.length === 0) {
-    wrap.innerHTML = `<p class="text-gray-400 text-sm col-span-2">Belum ada pesan. Jadilah yang pertama kirim! 🙌</p>`;
+    wrap.innerHTML = `<p class="text-muted text-sm col-span-2">Belum ada pesan. Jadilah yang pertama kirim.</p>`;
     return;
   }
 
   list.forEach((m) => {
     const card = document.createElement("div");
-    card.className = "surface bg-canvas-panel border border-white/10 rounded-xl p-4";
+    card.className = "bg-white border border-line rounded-2xl p-4";
     card.innerHTML = `
-      <p class="text-sm">${escapeHTML(m.pesan)}</p>
-      <p class="text-[11px] text-gray-500 mt-2">🕶️ Anonim · ${new Date(m.waktu).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>`;
+      <p class="text-sm text-ink">${escapeHTML(m.pesan)}</p>
+      <p class="text-[11px] text-muted mt-2 flex items-center gap-1.5">${icon("i-user", "icon icon-sm")} Anonim · ${new Date(m.waktu).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>`;
     wrap.appendChild(card);
   });
 }
 
-// Mencegah HTML injection sederhana dari input pengguna
 function escapeHTML(str) {
   const div = document.createElement("div");
   div.textContent = str;
@@ -612,38 +617,120 @@ function renderLeaderboard() {
   const poin = DB.getPoin();
   const sorted = Object.entries(poin).sort((a, b) => b[1] - a[1]);
 
-  // Top 3 ringkas (di hero section)
-  const top3Wrap = document.getElementById("leaderboardTop3");
-  top3Wrap.innerHTML = "";
-  const medali = ["🥇", "🥈", "🥉"];
-  sorted.slice(0, 3).forEach(([nama, p], i) => {
-    top3Wrap.innerHTML += `
-      <div class="flex items-center justify-between text-sm surface-2 bg-black/20 rounded-lg px-3 py-2">
-        <span class="flex items-center gap-2 truncate"><span>${medali[i]}</span><span class="truncate">${nama}</span></span>
-        <span class="font-mono text-pnc-gold shrink-0">${p} pts</span>
-      </div>`;
-  });
-
-  // Leaderboard lengkap
   const fullWrap = document.getElementById("leaderboardFull");
   fullWrap.innerHTML = "";
   sorted.forEach(([nama, p], i) => {
     fullWrap.innerHTML += `
-      <div class="card-hover surface bg-canvas-panel border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
+      <div class="card-hover bg-white border border-line rounded-2xl px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <span class="font-mono text-sm w-6 text-gray-400">#${i + 1}</span>
-          <span class="text-sm">${nama}</span>
+          <span class="font-mono text-sm w-6 text-muted">#${i + 1}</span>
+          <span class="text-sm text-ink">${nama}</span>
         </div>
-        <span class="font-mono text-pnc-gold text-sm">${p} pts</span>
+        <span class="font-mono text-pnc-blueLight text-sm">${p} pts</span>
       </div>`;
   });
 }
 
 
 /* ------------------------------------------------------------------------
-   12. NAVIGASI TAB (navbar desktop, chip mobile, bottom nav)
-   Dibangun sekali dari array TABS supaya ketiga jenis navigasi selalu
-   sinkron tanpa perlu menulis HTML manual tiga kali.
+   12. RENDER: OVERVIEW (goals, statistik, tabel tugas, avatar stack)
+   ------------------------------------------------------------------------ */
+function renderGoals() {
+  const now = new Date();
+  const goals = [
+    { label: "UTS", target: CONFIG.tanggalUTS, icon: "i-flag", bg: "bg-blue-50", fg: "text-pnc-blueLight" },
+    { label: "UAS", target: CONFIG.tanggalUAS, icon: "i-cap", bg: "bg-yellow-50", fg: "text-yellow-600" },
+    { label: "Libur Semester", target: CONFIG.tanggalLiburSemester, icon: "i-clock", bg: "bg-green-50", fg: "text-green-600" },
+  ];
+
+  const wrap = document.getElementById("goalsList");
+  wrap.innerHTML = goals.map((g) => {
+    const diffMs = new Date(g.target) - now;
+    const hari = Math.max(0, Math.ceil(diffMs / 86400000));
+    return `
+      <div class="card-hover bg-white border border-line rounded-2xl p-3.5 flex flex-col items-start">
+        <div class="w-9 h-9 rounded-full ${g.bg} ${g.fg} flex items-center justify-center mb-3">${icon(g.icon, "icon icon-sm")}</div>
+        <p class="font-display font-bold text-lg text-ink leading-none">${hari}</p>
+        <p class="text-[11px] text-muted mt-1">hari lagi</p>
+        <p class="text-[11px] font-medium text-ink mt-2">${g.label}</p>
+      </div>`;
+  }).join("");
+}
+
+function renderOutcomeStats() {
+  const list = ambilTugasDenganStatusTerkini();
+  const total = list.length || 1;
+  const statuses = [
+    { label: "Selesai", color: "#22c55e" },
+    { label: "Sedang Dikerjakan", color: "#2F63E8" },
+    { label: "Belum Dikerjakan", color: "#F9C80E" },
+    { label: "Terlambat", color: "#ef4444" },
+  ];
+
+  const wrap = document.getElementById("outcomeStats");
+  wrap.innerHTML = statuses.map((s) => {
+    const count = list.filter((t) => t.status === s.label).length;
+    const pct = Math.round((count / total) * 100);
+    return `
+      <div>
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span class="text-ink font-medium">${s.label}</span>
+          <span class="text-muted">${pct}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${s.color}"></div></div>
+      </div>`;
+  }).join("");
+}
+
+function renderOverviewTugasTable() {
+  const list = ambilTugasDenganStatusTerkini()
+    .filter((t) => t.status !== "Selesai")
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+    .slice(0, 5);
+
+  const body = document.getElementById("overviewTugasBody");
+  if (list.length === 0) {
+    body.innerHTML = `<tr><td colspan="4" class="py-4 text-muted text-sm">Semua tugas sudah beres. Mantap.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = list.map((t) => `
+    <tr class="border-b border-line last:border-0">
+      <td class="py-3 text-sm text-ink font-medium max-w-[160px] truncate">${t.judul}</td>
+      <td class="py-3 text-sm text-muted max-w-[140px] truncate">${t.matkul}</td>
+      <td class="py-3 text-sm text-muted whitespace-nowrap">${new Date(t.deadline).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</td>
+      <td class="py-3 text-right"><span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span></td>
+    </tr>`).join("");
+}
+
+function renderAvatarStack() {
+  const wrap = document.getElementById("avatarStack");
+  const subset = CONFIG.mahasiswa.slice(0, 5);
+  const colors = ["#0A2463", "#2F63E8", "#F9C80E", "#12203D", "#4C7CF0"];
+  wrap.innerHTML = subset.map((nama, i) => `
+    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-semibold" style="background:${colors[i % colors.length]}">${inisial(nama)}</div>
+  `).join("") + `<div class="w-9 h-9 rounded-full bg-page border-2 border-white flex items-center justify-center text-[10px] font-semibold text-muted">+${CONFIG.mahasiswa.length - subset.length}</div>`;
+}
+
+function renderOverview() {
+  renderJadwalCarousel();
+  renderGoals();
+  renderOutcomeStats();
+  renderOverviewTugasTable();
+  renderAvatarStack();
+}
+
+function renderAll() {
+  renderJadwal();
+  renderTugas();
+  renderOverview();
+  renderLeaderboard();
+  cekNotifikasi();
+}
+
+
+/* ------------------------------------------------------------------------
+   13. NAVIGASI (sidebar desktop + bottom nav mobile)
    ------------------------------------------------------------------------ */
 function bindNavButton(btn, tabId) {
   btn.dataset.tab = tabId;
@@ -651,34 +738,22 @@ function bindNavButton(btn, tabId) {
 }
 
 function buildNavigasi() {
-  const desktopNav = document.getElementById("desktopNav");
-  const chips = document.getElementById("mobileTabChips");
+  const sidebar = document.getElementById("sidebarNav");
   const bottomNav = document.getElementById("bottomNavInner");
-
-  desktopNav.innerHTML = "";
-  chips.innerHTML = "";
+  sidebar.innerHTML = "";
   bottomNav.innerHTML = "";
 
   TABS.forEach((t) => {
-    // Navbar desktop
-    const dBtn = document.createElement("button");
-    dBtn.className = "nav-btn relative px-3 py-2 text-gray-300 hover:text-white transition-colors";
-    dBtn.innerHTML = `${t.icon} ${t.label}<span class="nav-underline absolute left-0 -bottom-0.5 block"></span>`;
-    bindNavButton(dBtn, t.id);
-    desktopNav.appendChild(dBtn);
+    const sBtn = document.createElement("button");
+    sBtn.className = "sidebar-link nav-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted transition-colors";
+    sBtn.innerHTML = `${icon(t.icon)}<span>${t.label}</span>`;
+    bindNavButton(sBtn, t.id);
+    sidebar.appendChild(sBtn);
 
-    // Chip mobile (di bawah hero)
-    const cBtn = document.createElement("button");
-    cBtn.className = "nav-btn shrink-0 px-3 py-1.5 rounded-full border border-white/15 text-gray-300 whitespace-nowrap";
-    cBtn.textContent = `${t.icon} ${t.label}`;
-    bindNavButton(cBtn, t.id);
-    chips.appendChild(cBtn);
-
-    // Bottom nav mobile (hanya 5 item utama biar tidak sesak)
-    if (["jadwal", "tugas", "random", "anon", "leaderboard"].includes(t.id)) {
+    if (BOTTOM_TAB_IDS.includes(t.id)) {
       const bBtn = document.createElement("button");
-      bBtn.className = "nav-btn flex flex-col items-center justify-center gap-0.5 py-2.5 text-gray-400";
-      bBtn.innerHTML = `<span class="text-base">${t.icon}</span><span>${t.label}</span>`;
+      bBtn.className = "bottom-link nav-btn flex flex-col items-center justify-center gap-1 py-2.5 text-muted";
+      bBtn.innerHTML = `${icon(t.icon, "icon icon-sm")}<span>${t.label}</span>`;
       bindNavButton(bBtn, t.id);
       bottomNav.appendChild(bBtn);
     }
@@ -686,24 +761,28 @@ function buildNavigasi() {
 }
 
 function gotoTab(tabId) {
+  const tab = TABS.find((t) => t.id === tabId);
+  if (!tab) return;
+
   document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
   document.getElementById(`tab-${tabId}`).classList.add("active");
 
-  document.querySelectorAll(".nav-btn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.tab === tabId);
-  });
+  document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === tabId));
 
-  document.getElementById(`tab-${tabId}`).scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("pageTitle").textContent = tab.title;
+  document.getElementById("pageSubtitle").textContent = tab.subtitle;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// Tombol kecil "Lihat semua" di kartu leaderboard hero
 document.addEventListener("click", (e) => {
-  if (e.target.matches("[data-tab].nav-btn-inline")) gotoTab(e.target.dataset.tab);
+  const t = e.target.closest("[data-tab].nav-btn-inline");
+  if (t) gotoTab(t.dataset.tab);
 });
 
 
 /* ------------------------------------------------------------------------
-   13. MODAL TAMBAH TUGAS
+   14. MODAL TAMBAH TUGAS
    ------------------------------------------------------------------------ */
 function bukaModalTugas() {
   document.getElementById("modalTugas").classList.remove("hidden");
@@ -717,58 +796,67 @@ function tutupModalTugas() {
 
 
 /* ------------------------------------------------------------------------
-   14. DARK / LIGHT MODE
+   15. DARK / LIGHT MODE
+   Tema terang adalah default sesuai referensi desain baru; mode gelap
+   opsional lewat tombol di sidebar.
    ------------------------------------------------------------------------ */
 function terapkanTema(mode) {
-  document.body.classList.toggle("light", mode === "light");
-  document.getElementById("themeKnob").textContent = mode === "light" ? "☀️" : "🌙";
-  document.getElementById("themeKnob").style.transform = mode === "light" ? "translateX(20px)" : "translateX(0)";
+  document.documentElement.classList.toggle("dark-mode", mode === "dark");
+  document.body.style.background = mode === "dark" ? "#0F1424" : "#F3F5FB";
+  document.body.style.color = mode === "dark" ? "#F3F5FB" : "#101B36";
+  const iconUse = document.querySelector("#themeIconDesktop use");
+  if (iconUse) iconUse.setAttribute("href", mode === "dark" ? "#i-sun" : "#i-moon");
+  const label = document.getElementById("themeLabelDesktop");
+  if (label) label.textContent = mode === "dark" ? "Mode Terang" : "Mode Gelap";
   DB.setTheme(mode);
 }
 
 
 /* ------------------------------------------------------------------------
-   15. INISIALISASI / EVENT BINDING UTAMA
+   16. INISIALISASI
    ------------------------------------------------------------------------ */
 function init() {
   buildNavigasi();
-  gotoTab("jadwal");
-
+  gotoTab("overview");
   renderHariFilter();
-  renderJadwal();
-  renderTugas();
+  buildWheelSVG();
   renderMateri();
   renderDosen();
   renderAnon();
-  renderLeaderboard();
-  buildWheelSVG();
+  renderAll();
 
   terapkanTema(DB.getTheme());
   tickClock();
   setInterval(tickClock, 1000);
 
-  // Render ulang jadwal saat resize (supaya beralih mode filter mobile<->desktop)
   let resizeTimer;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(renderJadwal, 200);
   });
 
-  // --- Event: toggle tema ---
-  document.getElementById("themeToggle").addEventListener("click", () => {
-    const mode = document.body.classList.contains("light") ? "dark" : "light";
+  document.getElementById("themeToggleDesktop").addEventListener("click", () => {
+    const mode = DB.getTheme() === "light" ? "dark" : "light";
     terapkanTema(mode);
   });
 
-  // --- Event: spin wheel ---
-  document.getElementById("btnSpin").addEventListener("click", spinWheel);
+  document.getElementById("jadwalPrev").addEventListener("click", () => {
+    const n = jadwalHariIniList().length || 1;
+    jadwalIdx = (jadwalIdx - 1 + n) % n;
+    renderJadwalCarousel();
+  });
+  document.getElementById("jadwalNext").addEventListener("click", () => {
+    const n = jadwalHariIniList().length || 1;
+    jadwalIdx = (jadwalIdx + 1) % n;
+    renderJadwalCarousel();
+  });
 
-  // --- Event: filter status tugas ---
+  document.getElementById("btnSpin").addEventListener("click", spinWheel);
   document.getElementById("filterStatus").addEventListener("change", renderTugas);
 
-  // --- Event: modal tambah tugas ---
   document.getElementById("btnTambahTugas").addEventListener("click", bukaModalTugas);
   document.getElementById("btnBatalTugas").addEventListener("click", tutupModalTugas);
+  document.getElementById("btnCloseModal").addEventListener("click", tutupModalTugas);
   document.getElementById("formTugas").addEventListener("submit", (e) => {
     e.preventDefault();
     const baru = {
@@ -782,11 +870,10 @@ function init() {
     list.push(baru);
     DB.setTugas(list);
     tutupModalTugas();
-    renderTugas();
-    toast("Tugas baru ditambahkan ✅", "success");
+    toast("Tugas baru ditambahkan", "success");
+    renderAll();
   });
 
-  // --- Event: form kotak saran anonim ---
   document.getElementById("anonForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const input = document.getElementById("anonInput");
@@ -797,7 +884,12 @@ function init() {
     DB.setAnon(list);
     input.value = "";
     renderAnon();
-    toast("Pesan terkirim secara anonim 🕶️", "success");
+    toast("Pesan terkirim secara anonim", "success");
+  });
+
+  document.getElementById("notifBtn").addEventListener("click", () => {
+    const overdue = DB.getTugas().filter((t) => hitungStatusOtomatis(t) === "Terlambat").length;
+    toast(overdue > 0 ? `${overdue} tugas melewati deadline` : "Tidak ada tugas mendesak", overdue > 0 ? "error" : "info");
   });
 }
 
