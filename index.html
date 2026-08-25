@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRPL 1A HUB — Portal Kelas Politeknik Negeri Cilacap</title>
+<meta name="description" content="Portal kelas TRPL 1A PNC: jadwal, tugas, materi, dan kolaborasi mahasiswa." />
+
+<!-- Tailwind via CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: Sora (display) + Inter (body) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<script>
+  // Konfigurasi tema Tailwind kustom — palet resmi PNC + nuansa gelap modern
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          pnc: {
+            blue: '#0A2463',
+            blueDeep: '#061638',
+            gold: '#F9C80E',
+            goldSoft: '#FDE68A',
+          },
+          canvas: {
+            DEFAULT: '#080B1A',
+            panel: '#0F1630',
+            panel2: '#141C3D',
+          }
+        },
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        boxShadow: {
+          glow: '0 0 40px -10px rgba(249, 200, 14, 0.35)',
+          card: '0 10px 30px -12px rgba(0,0,0,0.5)',
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; }
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* ---- Light mode overrides (default = dark, .light = terang) ---- */
+  body.light { background: #F4F5FA; color: #0A2463; }
+  body.light .surface { background: #FFFFFF; border-color: #E4E7F2; }
+  body.light .surface-2 { background: #EEF0FA; border-color: #E4E7F2; }
+  body.light .text-muted { color: #4B5675; }
+  body.light .navbar { background: rgba(255,255,255,0.85); border-color: #E4E7F2; }
+  body.light .bottomnav { background: rgba(255,255,255,0.9); border-color: #E4E7F2; }
+
+  /* ---- Scrollbar tipis ---- */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #F9C80E55; border-radius: 10px; }
+
+  /* ---- Kartu jadwal aktif (highlight mata kuliah berlangsung) ---- */
+  .jadwal-aktif {
+    position: relative;
+    border-color: #F9C80E !important;
+    box-shadow: 0 0 0 1px #F9C80E, 0 0 30px -6px rgba(249,200,14,0.5);
+  }
+  .pulse-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 999px;
+    background: #22c55e; box-shadow: 0 0 0 rgba(34,197,94,0.6);
+    animation: pulseDot 1.6s infinite;
+  }
+  @keyframes pulseDot {
+    0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }
+    70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  }
+
+  /* ---- Roda Keberuntungan (signature element) ---- */
+  #wheel {
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    transform-origin: 50% 50%;
+  }
+  .wheel-tick {
+    animation: tick 0.09s linear infinite;
+  }
+  @keyframes tick { 0%{ filter: brightness(1);} 50%{ filter: brightness(1.6);} 100%{ filter: brightness(1);} }
+
+  /* ---- Fade/slide util untuk transisi antar tab ---- */
+  .tab-panel { display: none; animation: fadeUp 0.35s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  .card-hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -14px rgba(0,0,0,0.55); }
+
+  input[type="range"]::-webkit-slider-thumb { accent-color: #F9C80E; }
+
+  /* Nav aktif indicator */
+  .nav-btn.active { color: #F9C80E; }
+  .nav-btn.active .nav-underline { width: 100%; }
+  .nav-underline { height: 2px; width: 0%; background: #F9C80E; transition: width .25s ease; }
+
+  .confetti-piece {
+    position: fixed; top: -10px; width: 8px; height: 8px; opacity: 0.9; z-index: 60;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+  }
+</style>
+</head>
+
+<body class="bg-canvas text-white antialiased">
+
+<!-- ============ TOAST CONTAINER ============ -->
+<div id="toastBox" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm"></div>
+
+<!-- ============ NAVBAR ATAS ============ -->
+<header class="navbar sticky top-0 z-40 backdrop-blur bg-canvas/80 border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <!-- Logo PNC (bentuk perisai sederhana, dibuat via SVG agar tanpa file eksternal) -->
+      <svg width="38" height="38" viewBox="0 0 48 48" class="shrink-0">
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F9C80E"/>
+            <stop offset="100%" stop-color="#0A2463"/>
+          </linearGradient>
+        </defs>
+        <path d="M24 2 L44 10 V22 C44 34 36 43 24 46 C12 43 4 34 4 22 V10 Z" fill="url(#logoGrad)" stroke="#F9C80E" stroke-width="1"/>
+        <text x="24" y="28" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="14" fill="#0A2463">PNC</text>
+      </svg>
+      <div class="min-w-0">
+        <p class="font-display font-bold text-sm sm:text-base leading-tight truncate">TRPL 1A <span class="text-pnc-gold">HUB</span></p>
+        <p class="text-[11px] sm:text-xs text-muted text-gray-400 truncate">Politeknik Negeri Cilacap</p>
+      </div>
+    </div>
+
+    <div class="hidden md:flex items-center gap-1 text-sm font-medium" id="desktopNav"></div>
+
+    <div class="flex items-center gap-3">
+      <div class="text-right hidden sm:block">
+        <p id="clockTime" class="font-mono text-pnc-gold font-semibold text-sm leading-tight">00:00:00</p>
+        <p id="clockDate" class="text-[11px] text-gray-400 leading-tight">-</p>
+      </div>
+      <!-- Toggle dark/light -->
+      <button id="themeToggle" aria-label="Ganti mode gelap/terang"
+        class="relative w-12 h-7 rounded-full bg-pnc-blue border border-pnc-gold/40 flex items-center px-1 transition-colors">
+        <span id="themeKnob" class="w-5 h-5 rounded-full bg-pnc-gold flex items-center justify-center text-[10px] transition-transform duration-300">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MAIN ============ -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 pb-28 md:pb-10">
+
+  <!-- ===== HERO: Countdown UTS/UAS + status kelas ===== -->
+  <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 surface bg-gradient-to-br from-pnc-blue via-pnc-blueDeep to-canvas rounded-2xl p-5 sm:p-7 border border-white/10 relative overflow-hidden shadow-card">
+      <div class="absolute -right-10 -top-10 w-52 h-52 bg-pnc-gold/10 rounded-full blur-3xl"></div>
+      <p class="text-xs uppercase tracking-[0.2em] text-pnc-gold font-semibold">Semester 1 · Tahun Ajaran 2026/2027</p>
+      <h1 class="font-display text-2xl sm:text-4xl font-extrabold mt-2 leading-tight">Selamat datang, <span class="text-pnc-gold">TRPL 1A!</span></h1>
+      <p class="text-gray-300 text-sm mt-2 max-w-lg">Satu ruang buat pantau jadwal, kejar deadline, ambil materi, dan gas kolaborasi bareng satu kelas.</p>
+
+      <div id="statusKelasSekarang" class="mt-5 flex items-center gap-2 text-sm bg-black/20 border border-white/10 rounded-xl px-4 py-3 w-fit">
+        <!-- diisi oleh JS: mata kuliah yang sedang berlangsung -->
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <div class="surface-2 bg-black/20 rounded-xl p-4 border border-white/10">
+          <p class="text-[11px] text-gray-400 uppercase tracking-wide">Countdown UTS</p>
+          <p id="cdUTS" class="font-mono text-pnc-gold text-xl sm:text-2xl font-bold mt-1">--:--:--</p>
+        </div>
+        <div class="surface-2 bg-black/20 rounded-xl p-4 border border-white/10">
+          <p class="text-[11px] text-gray-400 uppercase tracking-wide">Countdown UAS</p>
+          <p id="cdUAS" class="font-mono text-pnc-gold text-xl sm:text-2xl font-bold mt-1">--:--:--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard ringkas -->
+    <div class="surface bg-canvas-panel rounded-2xl p-5 border border-white/10 shadow-card flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display font-bold text-lg">🏆 Top Keaktifan</h2>
+        <button data-tab="leaderboard" class="nav-btn-inline text-xs text-pnc-gold hover:underline">Lihat semua</button>
+      </div>
+      <div id="leaderboardTop3" class="flex flex-col gap-2 flex-1"></div>
+      <p class="text-[11px] text-gray-400 mt-3">Poin bertambah otomatis saat kamu selesaikan tugas atau presensi.</p>
+    </div>
+  </section>
+
+  <!-- ===== NAVIGASI TAB (mobile: scrollable chips) ===== -->
+  <nav class="mt-6 flex gap-2 overflow-x-auto pb-1 no-scrollbar md:hidden" id="mobileTabChips"></nav>
+
+  <!-- ===== TAB: DASHBOARD / JADWAL ===== -->
+  <section id="tab-jadwal" class="tab-panel active mt-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-display text-xl font-bold">📅 Jadwal Kuliah Mingguan</h2>
+      <div class="flex gap-1 text-xs" id="hariFilter"></div>
+    </div>
+    <div id="jadwalList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+  </section>
+
+  <!-- ===== TAB: TUGAS & DEADLINE ===== -->
+  <section id="tab-tugas" class="tab-panel mt-10">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <h2 class="font-display text-xl font-bold">📝 Tugas & Deadline</h2>
+      <div class="flex gap-2 text-xs">
+        <select id="filterStatus" class="surface-2 bg-canvas-panel border border-white/10 rounded-lg px-2 py-1.5">
+          <option value="semua">Semua status</option>
+          <option value="Belum Dikerjakan">Belum Dikerjakan</option>
+          <option value="Sedang Dikerjakan">Sedang Dikerjakan</option>
+          <option value="Selesai">Selesai</option>
+          <option value="Terlambat">Terlambat</option>
+        </select>
+        <button id="btnTambahTugas" class="bg-pnc-gold text-pnc-blue font-semibold px-3 py-1.5 rounded-lg hover:brightness-95">+ Tugas</button>
+      </div>
+    </div>
+    <div id="tugasList" class="flex flex-col gap-3"></div>
+  </section>
+
+  <!-- ===== TAB: MATERI ===== -->
+  <section id="tab-materi" class="tab-panel mt-10">
+    <h2 class="font-display text-xl font-bold mb-3">📚 Repository Materi</h2>
+    <div id="materiList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+  </section>
+
+  <!-- ===== TAB: DOSEN & ASLAB ===== -->
+  <section id="tab-dosen" class="tab-panel mt-10">
+    <h2 class="font-display text-xl font-bold mb-3">👨‍🏫 Dosen & Aslab</h2>
+    <div id="dosenList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- ===== TAB: RANDOMIZER (SIGNATURE ELEMENT) ===== -->
+  <section id="tab-random" class="tab-panel mt-10">
+    <h2 class="font-display text-xl font-bold mb-1">🎡 Roda Keberuntungan</h2>
+    <p class="text-sm text-gray-400 mb-5">Putar buat nentuin siapa yang maju presentasi atau jawab pertanyaan dosen — adil, transparan, tanpa drama.</p>
+
+    <div class="flex flex-col items-center gap-6 surface bg-canvas-panel rounded-2xl border border-white/10 p-6 sm:p-10 shadow-card">
+      <div class="relative w-64 h-64 sm:w-80 sm:h-80">
+        <!-- Penunjuk -->
+        <div class="absolute left-1/2 -top-2 -translate-x-1/2 z-10 w-0 h-0
+                    border-l-[12px] border-l-transparent
+                    border-r-[12px] border-r-transparent
+                    border-t-[20px] border-t-pnc-gold drop-shadow"></div>
+        <svg id="wheel" viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl"></svg>
+        <div class="absolute inset-0 m-auto w-12 h-12 rounded-full bg-pnc-gold border-4 border-canvas flex items-center justify-center font-display font-bold text-pnc-blue text-xs">GO</div>
+      </div>
+
+      <button id="btnSpin" class="bg-gradient-to-r from-pnc-gold to-yellow-400 text-pnc-blue font-display font-bold px-8 py-3 rounded-full shadow-glow hover:scale-105 active:scale-95 transition-transform">
+        🎲 Acak Nama Mahasiswa
+      </button>
+
+      <div id="spinResult" class="text-center min-h-[3rem]"></div>
+    </div>
+  </section>
+
+  <!-- ===== TAB: KOTAK SARAN ANONIM ===== -->
+  <section id="tab-anon" class="tab-panel mt-10">
+    <h2 class="font-display text-xl font-bold mb-1">🕵️ Kotak Saran & Pertanyaan Rahasia</h2>
+    <p class="text-sm text-gray-400 mb-4">Kirim tanpa nama. Semua mahasiswa TRPL 1A bisa baca papan pesan di bawah.</p>
+
+    <form id="anonForm" class="surface bg-canvas-panel border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row gap-2 shadow-card">
+      <input id="anonInput" maxlength="280" type="text" placeholder="Tulis pertanyaan atau saranmu di sini..."
+        class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-pnc-gold placeholder:text-gray-500" required />
+      <button type="submit" class="bg-pnc-gold text-pnc-blue font-semibold rounded-xl px-5 py-2.5 hover:brightness-95">Kirim Anonim</button>
+    </form>
+
+    <div id="anonBoard" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"></div>
+  </section>
+
+  <!-- ===== TAB: LEADERBOARD PENUH ===== -->
+  <section id="tab-leaderboard" class="tab-panel mt-10">
+    <h2 class="font-display text-xl font-bold mb-3">🏆 Leaderboard Keaktifan Kelas</h2>
+    <div id="leaderboardFull" class="flex flex-col gap-2"></div>
+    <p class="text-xs text-gray-500 mt-3">*Data poin bersifat lokal (localStorage) — siap disambungkan ke backend, lihat catatan di bawah.</p>
+  </section>
+
+  <!-- ===== CATATAN INTEGRASI BACKEND ===== -->
+  <section class="mt-14 mb-4 surface bg-canvas-panel border border-dashed border-pnc-gold/40 rounded-2xl p-5 text-sm text-gray-300">
+    <p class="font-display font-bold text-pnc-gold mb-1">🔌 Catatan untuk tahap backend</p>
+    <p>Semua penyimpanan data saat ini lewat objek <code class="text-pnc-gold">DB</code> di <code>app.js</code> bagian atas (lihat komentar <code>GANTI DENGAN FIREBASE DI SINI</code>). Tinggal ganti isi fungsi <code>get()</code>/<code>set()</code> dengan pemanggilan Firestore, struktur pemanggilan di seluruh halaman tidak perlu diubah.</p>
+  </section>
+</main>
+
+<!-- ============ BOTTOM NAV (mobile) ============ -->
+<nav class="bottomnav md:hidden fixed bottom-0 inset-x-0 z-40 bg-canvas/90 backdrop-blur border-t border-white/10">
+  <div class="grid grid-cols-5 text-[10px]" id="bottomNavInner"></div>
+</nav>
+
+<!-- ============ MODAL: TAMBAH TUGAS ============ -->
+<div id="modalTugas" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+  <div class="surface bg-canvas-panel border border-white/10 rounded-2xl p-5 w-full max-w-md shadow-card">
+    <h3 class="font-display font-bold text-lg mb-3">Tambah Tugas Baru</h3>
+    <form id="formTugas" class="flex flex-col gap-3 text-sm">
+      <input required id="inpJudul" placeholder="Nama tugas" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-pnc-gold" />
+      <input required id="inpMatkul" placeholder="Mata kuliah" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-pnc-gold" />
+      <input required id="inpDeadline" type="datetime-local" class="bg-black/20 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-pnc-gold" />
+      <div class="flex justify-end gap-2 mt-2">
+        <button type="button" id="btnBatalTugas" class="px-4 py-2 rounded-lg text-gray-300 hover:bg-white/5">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-pnc-gold text-pnc-blue font-semibold hover:brightness-95">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
