@@ -8,33 +8,30 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <script>
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          page: '#F3F5FB',
-          ink: '#101B36',
-          muted: '#8992A9',
-          line: '#E9ECF5',
-          pnc: {
-            blue: '#0A2463',
-            blueLight: '#2F63E8',
-            gold: '#F9C80E',
-          },
+          primary: '#0066cc',
+          primaryFocus: '#0071e3',
+          primaryDark: '#2997ff',
+          ink: '#1d1d1f',
+          bodyMuted: '#cccccc',
+          inkMuted80: '#333333',
+          inkMuted48: '#7a7a7a',
+          dividerSoft: '#f0f0f0',
+          hairline: '#e0e0e0',
+          canvas: '#ffffff',
+          parchment: '#f5f5f7',
+          pearl: '#fafafc',
+          tile1: '#272729',
+          tile2: '#2a2a2c',
+          tile3: '#252527',
         },
-        fontFamily: {
-          display: ['Sora', 'sans-serif'],
-          body: ['Inter', 'sans-serif'],
-          mono: ['JetBrains Mono', 'monospace'],
-        },
-        boxShadow: {
-          soft: '0 1px 2px rgba(16,27,54,0.04), 0 12px 28px -14px rgba(16,27,54,0.12)',
-          card: '0 20px 40px -18px rgba(16,27,54,0.18)',
-        },
-        borderRadius: { '2xl': '18px', '3xl': '26px' },
+        borderRadius: { none: '0px', xs: '5px', sm: '8px', md: '11px', lg: '18px', pill: '9999px' },
       }
     }
   }
@@ -42,52 +39,155 @@
 
 <style>
   html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', sans-serif; background: #F3F5FB; }
-  .font-display { font-family: 'Sora', sans-serif; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #ffffff; color: #1d1d1f; }
+
+  /* ===================== TYPOGRAPHY SCALE (dari DESIGN-apple.md) ===================== */
+  .t-hero        { font-weight: 600; font-size: 40px; line-height: 1.08; letter-spacing: -0.28px; }
+  .t-display-lg  { font-weight: 600; font-size: 32px; line-height: 1.1;  letter-spacing: -0.2px; }
+  .t-display-md  { font-weight: 600; font-size: 26px; line-height: 1.25; letter-spacing: -0.3px; }
+  .t-lead        { font-weight: 400; font-size: 21px; line-height: 1.3;  letter-spacing: 0.1px; }
+  .t-lead-airy   { font-weight: 300; font-size: 19px; line-height: 1.5; }
+  .t-tagline     { font-weight: 600; font-size: 21px; line-height: 1.19; letter-spacing: 0.231px; }
+  .t-body-strong { font-weight: 600; font-size: 17px; line-height: 1.3;  letter-spacing: -0.374px; }
+  .t-body        { font-weight: 400; font-size: 17px; line-height: 1.47; letter-spacing: -0.374px; }
+  .t-dense-link  { font-weight: 400; font-size: 17px; line-height: 2.2; }
+  .t-caption     { font-weight: 400; font-size: 14px; line-height: 1.43; letter-spacing: -0.224px; }
+  .t-caption-strong { font-weight: 600; font-size: 14px; line-height: 1.29; letter-spacing: -0.224px; }
+  .t-button-large { font-weight: 300; font-size: 18px; line-height: 1; }
+  .t-button-utility { font-weight: 400; font-size: 14px; line-height: 1.29; letter-spacing: -0.224px; }
+  .t-fine-print  { font-weight: 400; font-size: 12px; line-height: 1.4; letter-spacing: -0.12px; }
+  .t-nav-link    { font-weight: 400; font-size: 12px; line-height: 1; letter-spacing: -0.12px; }
+
+  @media (min-width: 640px) {
+    .t-hero { font-size: 48px; }
+    .t-display-lg { font-size: 36px; }
+  }
+  @media (min-width: 1068px) {
+    .t-hero { font-size: 56px; line-height: 1.07; }
+    .t-display-lg { font-size: 40px; }
+    .t-display-md { font-size: 34px; }
+  }
+
+  /* ===================== COMPONENTS ===================== */
+  .btn-primary {
+    background: #0066cc; color: #fff; border-radius: 9999px; padding: 13px 26px;
+    font-weight: 400; font-size: 17px; letter-spacing: -0.374px; display: inline-flex;
+    align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease, background .15s ease;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: #0071e3; }
+  .btn-primary:active { transform: scale(0.95); }
+
+  .btn-secondary-pill {
+    background: transparent; color: #0066cc; border: 1.5px solid #0066cc; border-radius: 9999px;
+    padding: 12px 25px; font-weight: 400; font-size: 17px; letter-spacing: -0.374px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s ease;
+    white-space: nowrap;
+  }
+  .btn-secondary-pill:active { transform: scale(0.95); }
+
+  .btn-secondary-pill-dark { border-color: #2997ff; color: #2997ff; }
+
+  .btn-dark-utility {
+    background: #1d1d1f; color: #fff; border-radius: 8px; padding: 8px 15px;
+    font-weight: 400; font-size: 14px; letter-spacing: -0.224px; transition: transform .15s ease;
+  }
+  .btn-dark-utility:active { transform: scale(0.95); }
+
+  .btn-icon-circular {
+    width: 44px; height: 44px; border-radius: 9999px; background: rgba(210,210,215,0.64);
+    color: #1d1d1f; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn-icon-circular:hover { background: rgba(210,210,215,0.9); }
+  .btn-icon-circular:active { transform: scale(0.9); }
+  .btn-icon-circular-dark { background: rgba(255,255,255,0.16); color: #fff; }
+  .btn-icon-circular-dark:hover { background: rgba(255,255,255,0.26); }
+
+  .text-link { color: #0066cc; }
+  .text-link-on-dark { color: #2997ff; }
+
+  .chip {
+    background: #fff; color: #1d1d1f; border-radius: 9999px; padding: 11px 16px;
+    font-weight: 400; font-size: 14px; letter-spacing: -0.224px; border: 1.5px solid #e0e0e0;
+    transition: transform .12s ease, border-color .15s ease;
+  }
+  .chip:active { transform: scale(0.95); }
+  .chip-selected { border: 2px solid #0071e3; color: #0066cc; }
+
+  .search-input {
+    background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 9999px;
+    padding: 12px 20px 12px 44px; height: 44px; font-size: 17px; letter-spacing: -0.374px; width: 100%;
+  }
+  .search-input:focus { outline: 2px solid #0071e3; outline-offset: 1px; }
+
+  .utility-card {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 18px; padding: 24px;
+    transition: transform .18s ease, border-color .18s ease;
+  }
+  .utility-card:hover { transform: translateY(-3px); border-color: #cccccc; }
+
+  .tile { padding: 48px 20px; }
+  @media (min-width: 640px) { .tile { padding: 64px 24px; } }
+  @media (min-width: 1068px) { .tile { padding: 80px 24px; } }
+
+  .tile-light { background: #ffffff; color: #1d1d1f; }
+  .tile-parchment { background: #f5f5f7; color: #1d1d1f; }
+  .tile-dark { background: #272729; color: #ffffff; }
+  .tile-dark2 { background: #2a2a2c; color: #ffffff; }
+  .tile-dark3 { background: #252527; color: #ffffff; }
+
+  .product-shadow { box-shadow: 3px 5px 30px rgba(0,0,0,0.22); }
+
+  .global-nav { background: #000000; height: 44px; }
+  .sub-nav-frosted {
+    background: rgba(245,245,247,0.82); backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .sticky-bar {
+    background: rgba(245,245,247,0.85); backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .progress-bar { height: 6px; border-radius: 9999px; background: rgba(0,0,0,0.08); overflow: hidden; }
+  .tile-dark .progress-bar, .tile-dark2 .progress-bar, .tile-dark3 .progress-bar { background: rgba(255,255,255,0.14); }
+  .progress-fill { height: 100%; border-radius: 9999px; transition: width .6s ease; background: #0066cc; }
+
+  .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .icon-sm { width: 15px; height: 15px; }
+  .icon-lg { width: 28px; height: 28px; }
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-thumb { background: #D8DDEC; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: #cccccc; border-radius: 10px; }
 
-  .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .icon-sm { width: 16px; height: 16px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-  .tab-panel { display: none; animation: fadeUp .35s ease; }
-  .tab-panel.active { display: block; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
+  .pulse-dot { display:inline-block; width:7px; height:7px; border-radius:999px; background:#32d74b; animation: pulseDot 1.6s infinite; }
+  @keyframes pulseDot { 0%{box-shadow:0 0 0 0 rgba(50,215,75,.55);} 70%{box-shadow:0 0 0 7px rgba(50,215,75,0);} 100%{box-shadow:0 0 0 0 rgba(50,215,75,0);} }
 
-  .sidebar-link.active { background: #EAF0FF; color: #2F63E8; }
-  .sidebar-link.active .icon { color: #2F63E8; }
-  .sidebar-link:not(.active):hover { background: #F7F8FC; }
-
-  .bottom-link.active { color: #2F63E8; }
-  .bottom-link.active .icon { color: #2F63E8; }
-
-  .card-hover { transition: transform .18s ease, box-shadow .18s ease; }
-  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -16px rgba(16,27,54,0.22); }
-
-  .pulse-dot { display:inline-block; width:7px; height:7px; border-radius:999px; background:#22c55e; animation: pulseDot 1.6s infinite; }
-  @keyframes pulseDot { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.55);} 70%{box-shadow:0 0 0 7px rgba(34,197,94,0);} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0);} }
-
-  .jadwal-aktif { border-color: #2F63E8 !important; box-shadow: 0 0 0 1px #2F63E8 inset; }
+  .jadwal-aktif { border: 1.5px solid #0066cc !important; }
 
   #wheel { transition: transform 5s cubic-bezier(0.17,0.67,0.12,0.99); transform-origin: 50% 50%; }
 
-  .progress-bar { height: 8px; border-radius: 999px; background: #EEF1F9; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 999px; transition: width .6s ease; }
-
-  .avatar-stack > * { margin-left: -10px; border: 2px solid #fff; }
+  .avatar-stack > * { margin-left: -12px; border: 3px solid #272729; }
   .avatar-stack > *:first-child { margin-left: 0; }
 
   .confetti-piece { position: fixed; top: -10px; width: 8px; height: 8px; opacity: .9; z-index: 60; animation: confettiFall linear forwards; }
   @keyframes confettiFall { to { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
 
-  input, select { font-family: 'Inter', sans-serif; }
+  .nav-link-item.active { color: #2997ff; }
+  .mobile-menu { transition: max-height .3s ease, opacity .25s ease; }
 </style>
 </head>
 
-<body class="text-ink antialiased">
+<body class="antialiased">
 
-<!-- ============ SVG SPRITE (semua ikon dipakai lewat <use>) ============ -->
+<!-- ============ SVG SPRITE ============ -->
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
@@ -99,8 +199,7 @@
     <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
     <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
     <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
-    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
-    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
     <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
     <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
@@ -115,273 +214,296 @@
     <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
   </defs>
 </svg>
 
 <!-- ============ TOAST ============ -->
-<div id="toastBox" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm"></div>
+<div id="toastBox" class="fixed top-16 right-4 z-[100] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm"></div>
 
-<div class="flex min-h-screen">
-
-  <!-- ============ SIDEBAR (desktop) ============ -->
-  <aside class="hidden lg:flex lg:w-64 shrink-0 flex-col bg-white border-r border-line px-4 py-6">
-    <div class="flex items-center gap-2.5 px-2 mb-8">
-      <svg width="34" height="34" viewBox="0 0 48 48" class="shrink-0">
-        <defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F9C80E"/><stop offset="100%" stop-color="#0A2463"/></linearGradient></defs>
-        <path d="M24 2 L44 10 V22 C44 34 36 43 24 46 C12 43 4 34 4 22 V10 Z" fill="url(#lg1)"/>
-        <text x="24" y="28" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="13" fill="#fff">PNC</text>
-      </svg>
-      <div class="leading-tight">
-        <p class="font-display font-bold text-sm text-ink">TRPL 1A HUB</p>
-        <p class="text-[11px] text-muted">Politeknik Negeri Cilacap</p>
-      </div>
+<!-- ============ GLOBAL NAV (hitam, 44px, ala Apple) ============ -->
+<header class="global-nav sticky top-0 z-40 text-white">
+  <div class="max-w-[1440px] mx-auto h-11 px-4 sm:px-6 flex items-center justify-between">
+    <div class="flex items-center gap-6 min-w-0">
+      <span class="t-tagline text-[15px] font-semibold shrink-0">TRPL1A</span>
+      <nav id="globalNavLinks" class="hidden lg:flex items-center gap-5 t-nav-link"></nav>
     </div>
-
-    <nav id="sidebarNav" class="flex flex-col gap-1 text-sm font-medium"></nav>
-
-    <div class="mt-auto pt-6 border-t border-line">
-      <button id="themeToggleDesktop" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:bg-page transition-colors">
-        <svg class="icon" id="themeIconDesktop"><use href="#i-moon"/></svg>
-        <span id="themeLabelDesktop">Mode Gelap</span>
+    <div class="flex items-center gap-4 shrink-0">
+      <button id="notifBtn" class="relative text-white/85 hover:text-white">
+        <svg class="icon icon-sm"><use href="#i-bell"/></svg>
+        <span id="notifDot" class="hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-black"></span>
+      </button>
+      <button id="hamburgerBtn" class="lg:hidden text-white/85 hover:text-white">
+        <svg class="icon icon-sm"><use href="#i-menu"/></svg>
       </button>
     </div>
-  </aside>
+  </div>
+  <!-- Menu mobile -->
+  <div id="mobileMenu" class="mobile-menu lg:hidden max-h-0 overflow-hidden opacity-0 bg-black">
+    <nav id="mobileNavLinks" class="flex flex-col px-4 py-2 t-nav-link text-[13px]"></nav>
+  </div>
+</header>
 
-  <!-- ============ MAIN ============ -->
-  <div class="flex-1 min-w-0 flex flex-col">
-
-    <!-- ===== TOPBAR ===== -->
-    <header class="sticky top-0 z-30 bg-page/90 backdrop-blur border-b border-line">
-      <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between gap-3">
-        <div class="min-w-0">
-          <h1 id="pageTitle" class="font-display text-lg sm:text-2xl font-bold text-ink truncate">Ringkasan Kelas</h1>
-          <p id="pageSubtitle" class="text-xs sm:text-sm text-muted mt-0.5 truncate">Info lengkap aktivitas mingguan TRPL 1A</p>
-        </div>
-
-        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div class="hidden md:flex flex-col items-end mr-1">
-            <p id="clockTime" class="font-mono text-sm font-semibold text-ink leading-tight">00:00:00</p>
-            <p id="clockDate" class="text-[11px] text-muted leading-tight">-</p>
-          </div>
-          <button id="notifBtn" class="relative w-9 h-9 rounded-full bg-white border border-line flex items-center justify-center text-muted hover:text-ink transition-colors">
-            <svg class="icon icon-sm"><use href="#i-bell"/></svg>
-            <span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white"></span>
-          </button>
-          <div class="flex items-center gap-2 pl-2 sm:pl-3 sm:border-l border-line">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-pnc-gold to-pnc-blue flex items-center justify-center shrink-0">
-              <svg class="icon icon-sm text-white"><use href="#i-user"/></svg>
-            </div>
-            <div class="hidden sm:block leading-tight">
-              <p class="text-sm font-semibold text-ink">Mahasiswa</p>
-              <p class="text-[11px] text-muted">TRPL 1A</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-10">
-
-      <!-- ===== TAB: OVERVIEW (mirip layout referensi) ===== -->
-      <section id="tab-overview" class="tab-panel active">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-          <!-- Kolom kiri -->
-          <div class="lg:col-span-2 flex flex-col gap-5">
-
-            <!-- Kartu jadwal (carousel, gradasi biru) -->
-            <div class="bg-white rounded-3xl border border-line shadow-soft p-5">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="font-display font-bold text-base text-ink">Jadwal Hari Ini</h2>
-                <div class="flex items-center gap-1">
-                  <button id="jadwalPrev" class="w-7 h-7 rounded-full border border-line flex items-center justify-center text-muted hover:text-ink"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
-                  <button id="jadwalNext" class="w-7 h-7 rounded-full border border-line flex items-center justify-center text-muted hover:text-ink"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
-                </div>
-              </div>
-              <div id="jadwalCarousel" class="rounded-2xl bg-gradient-to-br from-pnc-blueLight to-pnc-blue text-white p-5 sm:p-6 relative overflow-hidden min-h-[168px]">
-                <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-                <!-- diisi JS -->
-              </div>
-              <div id="jadwalDots" class="flex items-center justify-center gap-1.5 mt-4"></div>
-            </div>
-
-            <!-- Daftar tugas terbaru (mirip transaction history) -->
-            <div class="bg-white rounded-3xl border border-line shadow-soft p-5">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="font-display font-bold text-base text-ink">Tugas Terbaru</h2>
-                <button data-tab="tugas" class="nav-btn-inline text-xs font-semibold text-pnc-blueLight hover:underline">Lihat semua</button>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="text-left text-muted text-xs uppercase tracking-wide border-b border-line">
-                      <th class="pb-2.5 font-medium">Tugas</th>
-                      <th class="pb-2.5 font-medium">Mata Kuliah</th>
-                      <th class="pb-2.5 font-medium">Deadline</th>
-                      <th class="pb-2.5 font-medium text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="overviewTugasBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Kolom kanan -->
-          <div class="flex flex-col gap-5">
-
-            <!-- Goals: countdown UTS / UAS / Akhir semester -->
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h2 class="font-display font-bold text-base text-ink">Target Semester</h2>
-              </div>
-              <div class="grid grid-cols-3 gap-2.5" id="goalsList"></div>
-            </div>
-
-            <!-- Outcome statistics: proporsi status tugas -->
-            <div class="bg-white rounded-3xl border border-line shadow-soft p-5">
-              <h2 class="font-display font-bold text-base text-ink mb-4">Statistik Tugas</h2>
-              <div id="outcomeStats" class="flex flex-col gap-3.5"></div>
-            </div>
-
-            <!-- Avatar stack + CTA roda keberuntungan -->
-            <div class="bg-white rounded-3xl border border-line shadow-soft p-5">
-              <h2 class="font-display font-bold text-base text-ink mb-3">Giliran Presentasi</h2>
-              <div class="flex items-center gap-3 mb-4">
-                <div class="avatar-stack flex" id="avatarStack"></div>
-                <span class="text-xs text-muted">20 mahasiswa siap diacak</span>
-              </div>
-              <input id="overviewSearchDummy" type="text" placeholder="Cari nama mahasiswa"
-                class="w-full text-sm bg-page border border-line rounded-xl px-3.5 py-2.5 outline-none focus:border-pnc-blueLight placeholder:text-muted" disabled />
-            </div>
-
-            <button data-tab="random" class="nav-btn-inline card-hover text-left rounded-3xl p-5 bg-gradient-to-br from-pnc-gold to-yellow-400 text-pnc-blue shadow-soft">
-              <p class="font-display font-extrabold text-lg leading-snug">Putar Roda<br/>Keberuntungan</p>
-              <p class="text-xs mt-1.5 opacity-80">Tunjuk mahasiswa presentasi secara adil</p>
-              <span class="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold bg-pnc-blue text-white px-3.5 py-2 rounded-full">
-                Mulai sekarang <svg class="icon icon-sm"><use href="#i-chevron-right"/></svg>
-              </span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== TAB: JADWAL ===== -->
-      <section id="tab-jadwal" class="tab-panel">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h2 class="font-display text-lg font-bold text-ink">Jadwal Kuliah Mingguan</h2>
-          <div class="flex gap-1.5 text-xs lg:hidden" id="hariFilter"></div>
-        </div>
-        <div id="jadwalList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-      </section>
-
-      <!-- ===== TAB: TUGAS ===== -->
-      <section id="tab-tugas" class="tab-panel">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h2 class="font-display text-lg font-bold text-ink">Tugas & Deadline</h2>
-          <div class="flex gap-2 text-xs">
-            <select id="filterStatus" class="bg-white border border-line rounded-xl px-3 py-2 text-ink">
-              <option value="semua">Semua status</option>
-              <option value="Belum Dikerjakan">Belum Dikerjakan</option>
-              <option value="Sedang Dikerjakan">Sedang Dikerjakan</option>
-              <option value="Selesai">Selesai</option>
-              <option value="Terlambat">Terlambat</option>
-            </select>
-            <button id="btnTambahTugas" class="flex items-center gap-1.5 bg-pnc-blueLight text-white font-semibold px-3.5 py-2 rounded-xl hover:brightness-105">
-              <svg class="icon icon-sm"><use href="#i-plus"/></svg> Tugas
-            </button>
-          </div>
-        </div>
-        <div id="tugasList" class="flex flex-col gap-3"></div>
-      </section>
-
-      <!-- ===== TAB: MATERI ===== -->
-      <section id="tab-materi" class="tab-panel">
-        <h2 class="font-display text-lg font-bold text-ink mb-4">Repository Materi</h2>
-        <div id="materiList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-      </section>
-
-      <!-- ===== TAB: DOSEN ===== -->
-      <section id="tab-dosen" class="tab-panel">
-        <h2 class="font-display text-lg font-bold text-ink mb-4">Dosen & Asisten Lab</h2>
-        <div id="dosenList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      </section>
-
-      <!-- ===== TAB: RANDOM (Roda Keberuntungan) ===== -->
-      <section id="tab-random" class="tab-panel">
-        <h2 class="font-display text-lg font-bold text-ink mb-1">Roda Keberuntungan</h2>
-        <p class="text-sm text-muted mb-5">Putar buat nentuin siapa yang maju presentasi atau jawab pertanyaan dosen.</p>
-
-        <div class="flex flex-col items-center gap-6 bg-white rounded-3xl border border-line shadow-soft p-6 sm:p-10">
-          <div class="relative w-64 h-64 sm:w-80 sm:h-80">
-            <div class="absolute left-1/2 -top-2 -translate-x-1/2 z-10 w-0 h-0
-                        border-l-[11px] border-l-transparent border-r-[11px] border-r-transparent
-                        border-t-[18px] border-t-pnc-blueLight drop-shadow"></div>
-            <svg id="wheel" viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl"></svg>
-            <div class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-white border-4 border-page flex items-center justify-center shadow-soft">
-              <svg class="icon text-pnc-blueLight"><use href="#i-shuffle"/></svg>
-            </div>
-          </div>
-
-          <button id="btnSpin" class="flex items-center gap-2 bg-pnc-blueLight text-white font-display font-bold px-8 py-3 rounded-full shadow-soft hover:brightness-105 active:scale-95 transition-transform">
-            <svg class="icon icon-sm"><use href="#i-shuffle"/></svg> Acak Nama Mahasiswa
-          </button>
-
-          <div id="spinResult" class="text-center min-h-[3rem]"></div>
-        </div>
-      </section>
-
-      <!-- ===== TAB: ANONIM ===== -->
-      <section id="tab-anon" class="tab-panel">
-        <h2 class="font-display text-lg font-bold text-ink mb-1">Kotak Saran & Pertanyaan Rahasia</h2>
-        <p class="text-sm text-muted mb-4">Kirim tanpa nama. Semua mahasiswa TRPL 1A bisa baca papan pesan di bawah.</p>
-
-        <form id="anonForm" class="bg-white border border-line rounded-2xl p-3 flex flex-col sm:flex-row gap-2 shadow-soft">
-          <input id="anonInput" maxlength="280" type="text" placeholder="Tulis pertanyaan atau saranmu di sini..."
-            class="flex-1 bg-page border border-line rounded-xl px-4 py-2.5 outline-none focus:border-pnc-blueLight placeholder:text-muted" required />
-          <button type="submit" class="flex items-center justify-center gap-1.5 bg-pnc-blueLight text-white font-semibold rounded-xl px-5 py-2.5 hover:brightness-105">
-            <svg class="icon icon-sm"><use href="#i-send"/></svg> Kirim
-          </button>
-        </form>
-
-        <div id="anonBoard" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"></div>
-      </section>
-
-      <!-- ===== TAB: LEADERBOARD ===== -->
-      <section id="tab-leaderboard" class="tab-panel">
-        <h2 class="font-display text-lg font-bold text-ink mb-4">Leaderboard Keaktifan Kelas</h2>
-        <div id="leaderboardFull" class="flex flex-col gap-2"></div>
-        <p class="text-xs text-muted mt-3">Data poin bersifat lokal (localStorage) — siap disambungkan ke backend, lihat catatan di bawah.</p>
-      </section>
-
-      <!-- ===== CATATAN BACKEND ===== -->
-      <section class="mt-10 mb-4 bg-white border border-dashed border-line rounded-2xl p-5 text-sm text-muted">
-        <p class="font-display font-bold text-ink mb-1">Catatan untuk tahap backend</p>
-        <p>Semua penyimpanan data saat ini lewat objek <code class="text-pnc-blueLight">DB</code> di <code>app.js</code> bagian atas (lihat komentar <code>GANTI DENGAN FIREBASE DI SINI</code>). Tinggal ganti isi fungsi <code>get()</code>/<code>set()</code> dengan pemanggilan Firestore, struktur pemanggilan di seluruh halaman tidak perlu diubah.</p>
-      </section>
-    </main>
+<!-- ============ SUB NAV FROSTED (per tab) ============ -->
+<div class="sub-nav-frosted sticky top-11 z-30">
+  <div class="max-w-[1440px] mx-auto h-[52px] px-4 sm:px-6 flex items-center justify-between gap-3">
+    <p id="pageTagline" class="t-tagline truncate">Ringkasan</p>
+    <div class="flex items-center gap-3 shrink-0">
+      <p id="clockTime" class="hidden sm:block t-caption text-inkMuted48 font-mono">00:00:00</p>
+      <button id="subNavAction" data-tab="tugas" class="nav-btn-inline btn-primary !py-2 !px-4 !text-[14px]">
+        <svg class="icon icon-sm"><use href="#i-plus"/></svg> Tugas
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- ============ BOTTOM NAV (mobile & tablet) ============ -->
-<nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-line">
-  <div class="grid grid-cols-5 text-[10px]" id="bottomNavInner"></div>
-</nav>
+<main class="pb-24 lg:pb-10">
+
+  <!-- ===================================================================
+       TAB: OVERVIEW — deretan tile besar edge-to-edge, gantian terang/gelap
+       =================================================================== -->
+  <section id="tab-overview" class="tab-panel active">
+
+    <!-- Tile 1 — Hero (parchment) -->
+    <div class="tile tile-parchment">
+      <div class="max-w-[760px] mx-auto text-center flex flex-col items-center">
+        <p class="t-caption-strong text-primary mb-3">Semester 1 · TRPL 1A</p>
+        <h1 class="t-hero">Satu ruang buat semua urusan kelas.</h1>
+        <p class="t-lead text-inkMuted80 mt-5 max-w-[560px]">Jadwal, tugas, materi, dan kolaborasi TRPL 1A — semuanya kebaca dalam satu tempat, tanpa drama grup chat.</p>
+        <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
+          <button data-tab="jadwal" class="nav-btn-inline btn-primary">Lihat Jadwal <svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+          <button data-tab="random" class="nav-btn-inline btn-secondary-pill">Acak Nama</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 2 — Jadwal hari ini (dark) -->
+    <div class="tile tile-dark">
+      <div class="max-w-[900px] mx-auto">
+        <div class="flex items-start sm:items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p class="t-caption-strong text-primaryDark mb-2">Hari ini</p>
+            <h2 id="jadwalCarouselTitle" class="t-display-lg">Jadwal Kuliah</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="jadwalPrev" class="btn-icon-circular btn-icon-circular-dark"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+            <button id="jadwalNext" class="btn-icon-circular btn-icon-circular-dark"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+          </div>
+        </div>
+
+        <div id="jadwalCarousel" class="mt-8"></div>
+
+        <div class="flex items-center justify-between mt-8">
+          <div id="jadwalDots" class="flex items-center gap-1.5"></div>
+          <button data-tab="jadwal" class="nav-btn-inline text-link-on-dark t-body">Jadwal lengkap →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 3 — Tugas mendekati deadline (light) -->
+    <div class="tile tile-light">
+      <div class="max-w-[1100px] mx-auto">
+        <div class="flex items-center justify-between mb-8 flex-wrap gap-3">
+          <h2 class="t-display-lg">Tugas mendekati deadline</h2>
+          <button data-tab="tugas" class="nav-btn-inline text-link t-body">Semua tugas →</button>
+        </div>
+        <div id="overviewTugasGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-5"></div>
+      </div>
+    </div>
+
+    <!-- Tile 4 — Countdown ujian (dark2) -->
+    <div class="tile tile-dark2">
+      <div class="max-w-[900px] mx-auto text-center">
+        <p class="t-caption-strong text-primaryDark mb-3">Target Semester</p>
+        <h2 class="t-display-lg mb-10">Waktu terus jalan.</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-4">
+          <div>
+            <p id="cdUTS" class="t-hero text-white">0</p>
+            <p class="t-body text-white/60 mt-1">hari menuju UTS</p>
+          </div>
+          <div>
+            <p id="cdUAS" class="t-hero text-white">0</p>
+            <p class="t-body text-white/60 mt-1">hari menuju UAS</p>
+          </div>
+          <div>
+            <p id="cdLibur" class="t-hero text-white">0</p>
+            <p class="t-body text-white/60 mt-1">hari menuju libur semester</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 5 — Statistik & leaderboard (parchment) -->
+    <div class="tile tile-parchment">
+      <div class="max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div>
+          <h2 class="t-display-md mb-6">Statistik tugas kelas</h2>
+          <div id="outcomeStats" class="flex flex-col gap-5"></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="t-display-md">Top keaktifan</h2>
+            <button data-tab="leaderboard" class="nav-btn-inline text-link t-caption">Lihat semua →</button>
+          </div>
+          <div id="leaderboardTop3" class="flex flex-col gap-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 6 — Roda keberuntungan CTA (dark3) -->
+    <div class="tile tile-dark3">
+      <div class="max-w-[760px] mx-auto text-center flex flex-col items-center">
+        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-white/10 to-white/0 border border-white/15 flex items-center justify-center mb-8 product-shadow">
+          <svg class="icon-lg text-primaryDark"><use href="#i-shuffle"/></svg>
+        </div>
+        <h2 class="t-display-lg">Butuh yang maju presentasi?</h2>
+        <p class="t-body text-white/60 mt-4 max-w-[440px]">Putar roda keberuntungan — adil, transparan, dan seru buat semua orang di kelas.</p>
+        <button data-tab="random" class="nav-btn-inline btn-primary mt-8">Putar Roda Sekarang</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       TAB: JADWAL
+       =================================================================== -->
+  <section id="tab-jadwal" class="tab-panel tile tile-light !pb-16">
+    <div class="max-w-[1100px] mx-auto">
+      <h2 class="t-display-lg mb-2">Jadwal Kuliah Mingguan</h2>
+      <p class="t-body text-inkMuted80 mb-6">Susunan lengkap mata kuliah TRPL 1A, Senin sampai Jumat.</p>
+      <div class="flex gap-2 overflow-x-auto pb-1 mb-6 lg:hidden" id="hariFilter"></div>
+      <div id="jadwalList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: TUGAS
+       =================================================================== -->
+  <section id="tab-tugas" class="tab-panel tile tile-light !pb-16">
+    <div class="max-w-[1100px] mx-auto">
+      <div class="flex items-center justify-between mb-2 flex-wrap gap-3">
+        <h2 class="t-display-lg">Tugas & Deadline</h2>
+      </div>
+      <p class="t-body text-inkMuted80 mb-6">Tandai progres tugasmu, kelas dapat lihat statusnya secara real-time.</p>
+      <div class="flex gap-2 overflow-x-auto pb-1 mb-6" id="statusFilterChips"></div>
+      <div id="tugasList" class="flex flex-col gap-4"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: MATERI
+       =================================================================== -->
+  <section id="tab-materi" class="tab-panel tile tile-light !pb-16">
+    <div class="max-w-[1100px] mx-auto">
+      <h2 class="t-display-lg mb-2">Repository Materi</h2>
+      <p class="t-body text-inkMuted80 mb-6">Semua bahan ajar per mata kuliah, tinggal cari dan buka.</p>
+      <div class="relative max-w-[420px] mb-8">
+        <svg class="icon icon-sm absolute left-4 top-1/2 -translate-y-1/2 text-inkMuted48"><use href="#i-search"/></svg>
+        <input id="materiSearch" type="text" placeholder="Cari materi atau mata kuliah" class="search-input" />
+      </div>
+      <div id="materiList" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: DOSEN
+       =================================================================== -->
+  <section id="tab-dosen" class="tab-panel tile tile-light !pb-16">
+    <div class="max-w-[1100px] mx-auto">
+      <h2 class="t-display-lg mb-2">Dosen & Asisten Lab</h2>
+      <p class="t-body text-inkMuted80 mb-6">Kontak dan mata kuliah yang diampu.</p>
+      <div id="dosenList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: RANDOM (Roda Keberuntungan) — full-bleed dark
+       =================================================================== -->
+  <section id="tab-random" class="tab-panel tile tile-dark !pb-20">
+    <div class="max-w-[760px] mx-auto text-center flex flex-col items-center">
+      <h2 class="t-display-lg">Roda Keberuntungan</h2>
+      <p class="t-body text-white/60 mt-3 max-w-[440px]">Putar buat nentuin siapa yang maju presentasi atau jawab pertanyaan dosen.</p>
+
+      <div class="relative w-72 h-72 sm:w-96 sm:h-96 mt-10">
+        <div class="absolute left-1/2 -top-2 -translate-x-1/2 z-10 w-0 h-0
+                    border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent
+                    border-t-[20px] border-t-primaryDark"></div>
+        <svg id="wheel" viewBox="0 0 200 200" class="w-full h-full product-shadow rounded-full"></svg>
+        <div class="absolute inset-0 m-auto w-16 h-16 rounded-full bg-tile1 border-4 border-tile3 flex items-center justify-center">
+          <svg class="icon text-primaryDark"><use href="#i-shuffle"/></svg>
+        </div>
+      </div>
+
+      <button id="btnSpin" class="btn-primary mt-10">
+        <svg class="icon icon-sm"><use href="#i-shuffle"/></svg> Acak Nama Mahasiswa
+      </button>
+
+      <div id="spinResult" class="text-center min-h-[4rem] mt-4"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: ANONIM
+       =================================================================== -->
+  <section id="tab-anon" class="tab-panel tile tile-parchment !pb-16">
+    <div class="max-w-[760px] mx-auto">
+      <h2 class="t-display-lg mb-2 text-center">Kotak Saran & Pertanyaan Rahasia</h2>
+      <p class="t-body text-inkMuted80 mb-8 text-center">Kirim tanpa nama. Semua mahasiswa TRPL 1A bisa baca papan pesan di bawah.</p>
+
+      <form id="anonForm" class="flex flex-col sm:flex-row gap-3">
+        <input id="anonInput" maxlength="280" type="text" placeholder="Tulis pertanyaan atau saranmu di sini..."
+          class="search-input !pl-5 flex-1" required />
+        <button type="submit" class="btn-primary shrink-0">
+          <svg class="icon icon-sm"><use href="#i-send"/></svg> Kirim
+        </button>
+      </form>
+
+      <div id="anonBoard" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TAB: LEADERBOARD
+       =================================================================== -->
+  <section id="tab-leaderboard" class="tab-panel tile tile-light !pb-16">
+    <div class="max-w-[720px] mx-auto">
+      <h2 class="t-display-lg mb-2">Leaderboard Keaktifan</h2>
+      <p class="t-body text-inkMuted80 mb-8">Poin bertambah otomatis lewat penyelesaian tugas dan putaran roda.</p>
+      <div id="leaderboardFull" class="flex flex-col gap-3"></div>
+    </div>
+  </section>
+
+  <!-- ===== CATATAN BACKEND ===== -->
+  <div class="tile tile-parchment !py-12">
+    <div class="max-w-[720px] mx-auto text-center">
+      <p class="t-caption-strong text-primary mb-2">Catatan untuk tahap backend</p>
+      <p class="t-caption text-inkMuted48">Semua penyimpanan data lewat objek <code class="text-primary">DB</code> di <code>app.js</code> (lihat komentar <code>GANTI DENGAN FIREBASE DI SINI</code>). Ganti isi <code>get()</code>/<code>set()</code> dengan Firestore, struktur pemanggilan di halaman lain tidak perlu diubah.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ============ FLOATING STICKY BAR (deadline terdekat) ============ -->
+<div id="stickyBar" class="sticky-bar fixed bottom-0 inset-x-0 z-40 hidden">
+  <div class="max-w-[1100px] mx-auto h-16 px-5 sm:px-6 flex items-center justify-between gap-4">
+    <p id="stickyBarText" class="t-body truncate">-</p>
+    <button data-tab="tugas" class="nav-btn-inline btn-primary !py-2 !px-4 !text-[14px] shrink-0">Lihat</button>
+  </div>
+</div>
 
 <!-- ============ MODAL: TAMBAH TUGAS ============ -->
-<div id="modalTugas" class="fixed inset-0 z-[90] hidden items-center justify-center bg-ink/40 backdrop-blur-sm px-4">
-  <div class="bg-white border border-line rounded-3xl p-5 w-full max-w-md shadow-card">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="font-display font-bold text-lg text-ink">Tambah Tugas Baru</h3>
-      <button id="btnCloseModal" class="w-8 h-8 rounded-full flex items-center justify-center text-muted hover:bg-page"><svg class="icon icon-sm"><use href="#i-x"/></svg></button>
+<div id="modalTugas" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="t-display-md !text-[22px]">Tambah Tugas Baru</h3>
+      <button id="btnCloseModal" class="btn-icon-circular !w-9 !h-9"><svg class="icon icon-sm"><use href="#i-x"/></svg></button>
     </div>
-    <form id="formTugas" class="flex flex-col gap-3 text-sm">
-      <input required id="inpJudul" placeholder="Nama tugas" class="bg-page border border-line rounded-xl px-3.5 py-2.5 outline-none focus:border-pnc-blueLight" />
-      <input required id="inpMatkul" placeholder="Mata kuliah" class="bg-page border border-line rounded-xl px-3.5 py-2.5 outline-none focus:border-pnc-blueLight" />
-      <input required id="inpDeadline" type="datetime-local" class="bg-page border border-line rounded-xl px-3.5 py-2.5 outline-none focus:border-pnc-blueLight" />
-      <div class="flex justify-end gap-2 mt-2">
-        <button type="button" id="btnBatalTugas" class="px-4 py-2 rounded-xl text-muted hover:bg-page">Batal</button>
-        <button type="submit" class="px-4 py-2 rounded-xl bg-pnc-blueLight text-white font-semibold hover:brightness-105">Simpan</button>
+    <form id="formTugas" class="flex flex-col gap-3">
+      <input required id="inpJudul" placeholder="Nama tugas" class="search-input !rounded-md !pl-5" />
+      <input required id="inpMatkul" placeholder="Mata kuliah" class="search-input !rounded-md !pl-5" />
+      <input required id="inpDeadline" type="datetime-local" class="search-input !rounded-md !pl-5" />
+      <div class="flex justify-end gap-3 mt-3">
+        <button type="button" id="btnBatalTugas" class="t-body text-inkMuted48 px-2">Batal</button>
+        <button type="submit" class="btn-primary">Simpan</button>
       </div>
     </form>
   </div>
