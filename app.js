@@ -1,9 +1,10 @@
 /* =========================================================================
    TRPL 1A HUB — app.js
-   Portal kelas Politeknik Negeri Cilacap (TRPL 1A)
-   Semua data tersimpan di localStorage. Struktur DB dibuat modular supaya
-   gampang diganti ke Firebase/backend lain nanti — lihat komentar
-   "GANTI DENGAN FIREBASE DI SINI" di bagian objek DB.
+   Mengikuti sistem desain di DESIGN-apple.md: satu warna aksen (Action
+   Blue), tipografi besar SF-Pro/Inter, tile penuh gantian terang/gelap,
+   tombol pill, dan shadow hanya untuk elemen "produk" (roda keberuntungan).
+   Semua data tersimpan di localStorage lewat objek DB — lihat komentar
+   "GANTI DENGAN FIREBASE DI SINI" untuk titik migrasi backend.
    ========================================================================= */
 
 /* ------------------------------------------------------------------------
@@ -88,9 +89,8 @@ function addDays(n) {
 
 /* ------------------------------------------------------------------------
    2. LAPISAN "DATABASE" (localStorage)
-   Semua akses baca/tulis lewat objek DB ini. Untuk pindah ke Firebase,
-   cukup ubah isi method di bawah — pemanggilan DB.xxx() di kode lain
-   tidak perlu diubah sama sekali.
+   Untuk pindah ke Firebase, ubah isi method di bawah — pemanggilan
+   DB.xxx() di tempat lain tidak perlu diubah.
    ------------------------------------------------------------------------ */
 const DB = {
   _read(key, fallback) {
@@ -119,9 +119,6 @@ const DB = {
 
   getAnon() { return this._read("trpl1a_anon", []); },
   setAnon(list) { this._write("trpl1a_anon", list); },
-
-  getTheme() { return this._read("trpl1a_theme", "light"); },
-  setTheme(v) { this._write("trpl1a_theme", v); },
 };
 
 function seedPoin() {
@@ -137,18 +134,18 @@ function seedPoin() {
 const HARI_LIST = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 
 const TABS = [
-  { id: "overview", label: "Ringkasan", icon: "i-grid", title: "Ringkasan Kelas", subtitle: "Info lengkap aktivitas mingguan TRPL 1A" },
-  { id: "jadwal", label: "Jadwal", icon: "i-calendar", title: "Jadwal Kuliah", subtitle: "Susunan mata kuliah TRPL 1A minggu ini" },
-  { id: "tugas", label: "Tugas", icon: "i-check-square", title: "Tugas & Deadline", subtitle: "Pantau progres dan tenggat waktu tugas" },
-  { id: "materi", label: "Materi", icon: "i-book", title: "Repository Materi", subtitle: "Kumpulan bahan ajar tiap mata kuliah" },
-  { id: "dosen", label: "Dosen", icon: "i-users", title: "Dosen & Aslab", subtitle: "Kontak pengampu mata kuliah TRPL 1A" },
-  { id: "random", label: "Acak", icon: "i-shuffle", title: "Roda Keberuntungan", subtitle: "Pengacak nama untuk sesi presentasi" },
-  { id: "anon", label: "Anonim", icon: "i-message", title: "Kotak Saran Anonim", subtitle: "Sampaikan pertanyaan tanpa nama" },
-  { id: "leaderboard", label: "Ranking", icon: "i-award", title: "Leaderboard Keaktifan", subtitle: "Peringkat poin partisipasi kelas" },
+  { id: "overview", label: "Ringkasan", tagline: "Ringkasan" },
+  { id: "jadwal", label: "Jadwal", tagline: "Jadwal Kuliah" },
+  { id: "tugas", label: "Tugas", tagline: "Tugas & Deadline" },
+  { id: "materi", label: "Materi", tagline: "Repository Materi" },
+  { id: "dosen", label: "Dosen", tagline: "Dosen & Aslab" },
+  { id: "random", label: "Acak", tagline: "Roda Keberuntungan" },
+  { id: "anon", label: "Anonim", tagline: "Kotak Saran Anonim" },
+  { id: "leaderboard", label: "Ranking", tagline: "Leaderboard" },
 ];
-const BOTTOM_TAB_IDS = ["overview", "jadwal", "tugas", "random", "leaderboard"];
 
 let hariAktifFilter = "Senin";
+let statusFilterAktif = "semua";
 let jadwalIdx = 0;
 
 function icon(name, cls = "icon") {
@@ -158,10 +155,10 @@ function icon(name, cls = "icon") {
 function toast(msg, type = "info") {
   const box = document.getElementById("toastBox");
   const el = document.createElement("div");
-  const color = type === "success" ? "border-green-300" : type === "error" ? "border-red-300" : "border-line";
-  el.className = `bg-white border ${color} rounded-xl px-4 py-3 text-sm text-ink shadow-card flex items-center gap-2`;
+  const border = type === "success" ? "border-l-4 border-l-green-500" : type === "error" ? "border-l-4 border-l-red-500" : "border-l-4 border-l-primary";
+  el.className = `bg-white ${border} rounded-md px-4 py-3 t-caption shadow-[0_8px_28px_rgba(0,0,0,0.14)] flex items-center gap-2`;
   const iconName = type === "success" ? "i-check-circle" : type === "error" ? "i-alert" : "i-circle";
-  el.innerHTML = `${icon(iconName, "icon icon-sm text-pnc-blueLight shrink-0")}<span>${msg}</span>`;
+  el.innerHTML = `${icon(iconName, "icon icon-sm text-primary shrink-0")}<span>${msg}</span>`;
   box.appendChild(el);
   setTimeout(() => {
     el.style.transition = "opacity .4s ease, transform .4s ease";
@@ -182,10 +179,6 @@ function formatSisaWaktu(ms) {
   return `${String(jam).padStart(2, "0")}:${String(menit).padStart(2, "0")}:${String(detik).padStart(2, "0")}`;
 }
 
-function inisial(nama) {
-  return nama.split(" ").slice(0, 2).map((s) => s[0]).join("").toUpperCase();
-}
-
 function menitDariString(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
@@ -193,16 +186,14 @@ function menitDariString(hhmm) {
 
 
 /* ------------------------------------------------------------------------
-   4. JAM REAL-TIME + STATUS NOTIFIKASI
+   4. JAM REAL-TIME + NOTIFIKASI + STICKY BAR
    ------------------------------------------------------------------------ */
 function tickClock() {
   const now = new Date();
-  document.getElementById("clockTime").textContent = now.toLocaleTimeString("id-ID", { hour12: false });
-  document.getElementById("clockDate").textContent = now.toLocaleDateString("id-ID", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
+  const el = document.getElementById("clockTime");
+  if (el) el.textContent = now.toLocaleTimeString("id-ID", { hour12: false });
   renderCountdownTugas();
-  renderJadwalCarousel(); // ringan, cukup dipanggil tiap detik agar badge "berlangsung" akurat
+  renderJadwalCarousel();
 }
 
 function cekNotifikasi() {
@@ -210,6 +201,29 @@ function cekNotifikasi() {
   const now = new Date();
   const ada = list.some((t) => t.status !== "Selesai" && new Date(t.deadline) - now < 1000 * 60 * 60 * 24);
   document.getElementById("notifDot").classList.toggle("hidden", !ada);
+}
+
+// Bar mengambang di bawah layar yang menampilkan deadline tugas terdekat —
+// hanya tampil di tab Tugas, meniru komponen floating-sticky-bar.
+function renderStickyBar() {
+  const bar = document.getElementById("stickyBar");
+  const isTugasTab = document.getElementById("tab-tugas").classList.contains("active");
+  if (!isTugasTab) { bar.classList.add("hidden"); return; }
+
+  const list = ambilTugasDenganStatusTerkini().filter((t) => t.status !== "Selesai");
+  list.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+  if (list.length === 0) {
+    bar.classList.add("hidden");
+    return;
+  }
+  const terdekat = list[0];
+  const sisa = new Date(terdekat.deadline) - new Date();
+  const teks = sisa > 0
+    ? `${terdekat.judul} — sisa ${formatSisaWaktu(sisa)}`
+    : `${terdekat.judul} — sudah lewat deadline`;
+  document.getElementById("stickyBarText").textContent = teks;
+  bar.classList.remove("hidden");
 }
 
 
@@ -231,7 +245,7 @@ function renderJadwal() {
     const items = CONFIG.jadwal[hari] || [];
     const groupWrap = document.createElement("div");
     groupWrap.className = "sm:col-span-2 lg:col-span-1";
-    groupWrap.innerHTML = `<p class="text-xs uppercase tracking-widest text-pnc-blueLight font-semibold mb-2 mt-1">${hari}</p>`;
+    groupWrap.innerHTML = `<p class="t-caption-strong text-primary mb-3 mt-1">${hari}</p>`;
 
     items.forEach((item) => {
       const isToday = hari.toLowerCase() === namaHariNow.toLowerCase();
@@ -239,17 +253,17 @@ function renderJadwal() {
       const isAktif = isToday && menitDariString(mulai) <= menit && menit <= menitDariString(selesai);
 
       const card = document.createElement("div");
-      card.className = `card-hover bg-white border border-line rounded-2xl p-4 mb-2 ${isAktif ? "jadwal-aktif" : ""}`;
+      card.className = `utility-card mb-3 ${isAktif ? "jadwal-aktif" : ""}`;
       card.innerHTML = `
         <div class="flex items-start justify-between gap-2">
           <div class="min-w-0">
-            <p class="font-semibold text-sm sm:text-base text-ink">${item.matkul}</p>
-            <p class="text-xs text-muted mt-1">${item.dosen}</p>
-            <p class="text-xs text-muted mt-1 flex items-center gap-1">${icon("i-pin", "icon icon-sm")} ${item.ruang}</p>
+            <p class="t-body-strong">${item.matkul}</p>
+            <p class="t-caption text-inkMuted48 mt-1.5">${item.dosen}</p>
+            <p class="t-caption text-inkMuted48 mt-1 flex items-center gap-1">${icon("i-pin", "icon icon-sm")} ${item.ruang}</p>
           </div>
           <div class="text-right shrink-0">
-            <p class="font-mono text-xs sm:text-sm text-pnc-blueLight">${item.jam}</p>
-            ${isAktif ? `<span class="inline-flex items-center gap-1 text-[10px] text-green-600 font-semibold mt-1"><span class="pulse-dot"></span>Berlangsung</span>` : ""}
+            <p class="t-caption-strong text-primary font-mono">${item.jam}</p>
+            ${isAktif ? `<span class="inline-flex items-center gap-1 t-fine-print text-green-600 font-semibold mt-1.5"><span class="pulse-dot"></span>Berlangsung</span>` : ""}
           </div>
         </div>`;
       groupWrap.appendChild(card);
@@ -264,8 +278,8 @@ function renderHariFilter() {
   wrap.innerHTML = "";
   HARI_LIST.forEach((hari) => {
     const btn = document.createElement("button");
-    btn.textContent = hari.slice(0, 3);
-    btn.className = `px-2.5 py-1 rounded-full border ${hari === hariAktifFilter ? "bg-pnc-blueLight text-white border-pnc-blueLight font-semibold" : "border-line text-muted"}`;
+    btn.textContent = hari;
+    btn.className = `chip shrink-0 ${hari === hariAktifFilter ? "chip-selected" : ""}`;
     btn.onclick = () => { hariAktifFilter = hari; renderHariFilter(); renderJadwal(); };
     wrap.appendChild(btn);
   });
@@ -273,7 +287,7 @@ function renderHariFilter() {
 
 
 /* ------------------------------------------------------------------------
-   6. RENDER: KARTU JADWAL CAROUSEL (di tab Overview)
+   6. RENDER: KARTU JADWAL CAROUSEL (tile gelap di tab Overview)
    ------------------------------------------------------------------------ */
 function jadwalHariIniList() {
   const now = new Date();
@@ -286,14 +300,12 @@ function renderJadwalCarousel() {
   const items = jadwalHariIniList();
   const wrap = document.getElementById("jadwalCarousel");
   const dotsWrap = document.getElementById("jadwalDots");
+  const titleEl = document.getElementById("jadwalCarouselTitle");
   if (!wrap) return;
 
   if (items.length === 0) {
-    wrap.innerHTML = `<div class="relative z-10">
-      <p class="text-xs uppercase tracking-wide text-white/70">Hari ini</p>
-      <p class="font-display text-lg font-bold mt-2">Tidak ada jadwal kuliah</p>
-      <p class="text-sm text-white/80 mt-1">Waktu yang pas buat review materi minggu ini.</p>
-    </div>`;
+    titleEl.textContent = "Tidak ada kelas";
+    wrap.innerHTML = `<p class="t-body text-white/60">Hari ini nggak ada jadwal kuliah — waktu yang pas buat review materi minggu ini.</p>`;
     dotsWrap.innerHTML = "";
     return;
   }
@@ -302,27 +314,21 @@ function renderJadwalCarousel() {
 
   const now = new Date();
   const menit = now.getHours() * 60 + now.getMinutes();
-
   const item = items[jadwalIdx];
   const [mulai, selesai] = item.jam.split("-");
   const isAktif = menitDariString(mulai) <= menit && menit <= menitDariString(selesai);
 
+  titleEl.textContent = item.matkul;
   wrap.innerHTML = `
-    <div class="relative z-10">
-      <div class="flex items-center justify-between">
-        <p class="text-xs uppercase tracking-wide text-white/70">Jadwal ${jadwalIdx + 1} dari ${items.length}</p>
-        ${isAktif ? `<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/15 px-2.5 py-1 rounded-full"><span class="pulse-dot"></span>Berlangsung</span>` : ""}
-      </div>
-      <p class="font-display text-xl sm:text-2xl font-bold mt-3 leading-snug">${item.matkul}</p>
-      <p class="text-sm text-white/85 mt-1.5">${item.dosen}</p>
-      <div class="flex items-center gap-4 mt-4 text-sm text-white/90">
-        <span class="flex items-center gap-1.5">${icon("i-clock", "icon icon-sm")} ${item.jam}</span>
-        <span class="flex items-center gap-1.5">${icon("i-pin", "icon icon-sm")} ${item.ruang}</span>
-      </div>
+    ${isAktif ? `<span class="inline-flex items-center gap-1.5 t-fine-print font-semibold bg-white/10 px-3 py-1.5 rounded-full mb-4"><span class="pulse-dot"></span>Sedang berlangsung</span>` : `<p class="t-caption text-white/50 mb-4">Jadwal ${jadwalIdx + 1} dari ${items.length}</p>`}
+    <p class="t-body text-white/85">${item.dosen}</p>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 t-body text-white/70">
+      <span class="flex items-center gap-2">${icon("i-clock", "icon icon-sm")} ${item.jam}</span>
+      <span class="flex items-center gap-2">${icon("i-pin", "icon icon-sm")} ${item.ruang}</span>
     </div>`;
 
   dotsWrap.innerHTML = items.map((_, i) =>
-    `<span class="w-1.5 h-1.5 rounded-full ${i === jadwalIdx ? "bg-pnc-blueLight w-4" : "bg-line"} transition-all"></span>`
+    `<span class="h-1.5 rounded-full transition-all ${i === jadwalIdx ? "bg-primaryDark w-6" : "bg-white/20 w-1.5"}"></span>`
   ).join("");
 }
 
@@ -338,7 +344,7 @@ function hitungStatusOtomatis(t) {
 function badgeClassStatus(status) {
   switch (status) {
     case "Selesai": return "bg-green-50 text-green-600 border-green-200";
-    case "Sedang Dikerjakan": return "bg-blue-50 text-pnc-blueLight border-blue-200";
+    case "Sedang Dikerjakan": return "bg-blue-50 text-primary border-blue-200";
     case "Terlambat": return "bg-red-50 text-red-500 border-red-200";
     default: return "bg-yellow-50 text-yellow-700 border-yellow-200"; // Belum Dikerjakan
   }
@@ -350,41 +356,52 @@ function ambilTugasDenganStatusTerkini() {
   return list;
 }
 
+function renderStatusFilterChips() {
+  const statuses = ["semua", "Belum Dikerjakan", "Sedang Dikerjakan", "Selesai", "Terlambat"];
+  const wrap = document.getElementById("statusFilterChips");
+  wrap.innerHTML = "";
+  statuses.forEach((s) => {
+    const btn = document.createElement("button");
+    btn.textContent = s === "semua" ? "Semua" : s;
+    btn.className = `chip shrink-0 ${s === statusFilterAktif ? "chip-selected" : ""}`;
+    btn.onclick = () => { statusFilterAktif = s; renderStatusFilterChips(); renderTugas(); };
+    wrap.appendChild(btn);
+  });
+}
+
 function renderTugas() {
   let list = ambilTugasDenganStatusTerkini();
-
-  const filter = document.getElementById("filterStatus").value;
-  if (filter !== "semua") list = list.filter((t) => t.status === filter);
+  if (statusFilterAktif !== "semua") list = list.filter((t) => t.status === statusFilterAktif);
   list.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   const wrap = document.getElementById("tugasList");
   wrap.innerHTML = "";
 
   if (list.length === 0) {
-    wrap.innerHTML = `<p class="text-muted text-sm">Belum ada tugas dengan status ini.</p>`;
+    wrap.innerHTML = `<p class="t-body text-inkMuted48">Belum ada tugas dengan status ini.</p>`;
     return;
   }
 
   list.forEach((t) => {
     const card = document.createElement("div");
-    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between";
+    card.className = "utility-card flex flex-col sm:flex-row sm:items-center gap-3 justify-between";
     card.innerHTML = `
       <div class="min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <p class="font-semibold text-sm sm:text-base text-ink">${t.judul}</p>
-          <span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <p class="t-body-strong">${t.judul}</p>
+          <span class="t-fine-print px-2.5 py-1 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span>
         </div>
-        <p class="text-xs text-muted mt-1">${t.matkul} · Deadline: ${new Date(t.deadline).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>
-        <p class="font-mono text-xs mt-1 countdown-tugas" data-deadline="${t.deadline}" data-status="${t.status}"></p>
+        <p class="t-caption text-inkMuted48 mt-1.5">${t.matkul} · Deadline ${new Date(t.deadline).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>
+        <p class="t-caption text-primary mt-1 font-mono countdown-tugas" data-deadline="${t.deadline}" data-status="${t.status}"></p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <select data-id="${t.id}" class="ubah-status text-xs bg-page border border-line rounded-lg px-2 py-1.5 text-ink">
+        <select data-id="${t.id}" class="ubah-status t-caption bg-parchment border border-hairline rounded-md px-2.5 py-2">
           <option ${t.status === "Belum Dikerjakan" ? "selected" : ""}>Belum Dikerjakan</option>
           <option ${t.status === "Sedang Dikerjakan" ? "selected" : ""}>Sedang Dikerjakan</option>
           <option ${t.status === "Selesai" ? "selected" : ""}>Selesai</option>
           <option ${t.status === "Terlambat" ? "selected" : ""}>Terlambat</option>
         </select>
-        <button data-id="${t.id}" class="hapus-tugas w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50">${icon("i-trash", "icon icon-sm")}</button>
+        <button data-id="${t.id}" class="hapus-tugas btn-icon-circular !w-9 !h-9 text-red-500">${icon("i-trash", "icon icon-sm")}</button>
       </div>`;
     wrap.appendChild(card);
   });
@@ -405,15 +422,16 @@ function renderCountdownTugas() {
     const sisa = deadline - new Date();
     if (el.dataset.status === "Selesai") {
       el.textContent = "Sudah dikumpulkan";
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-green-600";
+      el.className = "t-caption mt-1 font-mono countdown-tugas text-green-600";
     } else if (sisa <= 0) {
       el.textContent = "Waktu habis";
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-red-500";
+      el.className = "t-caption mt-1 font-mono countdown-tugas text-red-500";
     } else {
       el.textContent = `Sisa waktu ${formatSisaWaktu(sisa)}`;
-      el.className = "font-mono text-xs mt-1 countdown-tugas text-pnc-blueLight";
+      el.className = "t-caption mt-1 font-mono countdown-tugas text-primary";
     }
   });
+  renderStickyBar();
 }
 
 function ubahStatusTugas(id, statusBaru) {
@@ -447,20 +465,30 @@ function pilihMahasiswaAcakUntukDemo() {
 
 
 /* ------------------------------------------------------------------------
-   8. RENDER: MATERI & DOSEN
+   8. RENDER: MATERI (dengan pencarian) & DOSEN
    ------------------------------------------------------------------------ */
-function renderMateri() {
+function renderMateri(keyword = "") {
   const wrap = document.getElementById("materiList");
+  const kw = keyword.trim().toLowerCase();
+  const filtered = CONFIG.materi.filter((m) =>
+    m.judul.toLowerCase().includes(kw) || m.matkul.toLowerCase().includes(kw)
+  );
+
   wrap.innerHTML = "";
-  CONFIG.materi.forEach((m) => {
+  if (filtered.length === 0) {
+    wrap.innerHTML = `<p class="t-body text-inkMuted48 sm:col-span-3">Tidak ada materi yang cocok dengan pencarian.</p>`;
+    return;
+  }
+
+  filtered.forEach((m) => {
     const card = document.createElement("a");
     card.href = m.link;
-    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex items-center gap-3";
+    card.className = "utility-card flex items-center gap-3.5";
     card.innerHTML = `
-      <div class="w-11 h-11 rounded-xl bg-blue-50 text-pnc-blueLight flex items-center justify-center font-mono text-[11px] font-bold shrink-0">${m.tipe}</div>
+      <div class="w-12 h-12 rounded-md bg-blue-50 text-primary flex items-center justify-center font-mono t-fine-print font-bold shrink-0">${m.tipe}</div>
       <div class="min-w-0">
-        <p class="font-medium text-sm text-ink truncate">${m.judul}</p>
-        <p class="text-xs text-muted truncate">${m.matkul}</p>
+        <p class="t-body-strong truncate">${m.judul}</p>
+        <p class="t-caption text-inkMuted48 truncate">${m.matkul}</p>
       </div>`;
     wrap.appendChild(card);
   });
@@ -471,12 +499,12 @@ function renderDosen() {
   wrap.innerHTML = "";
   CONFIG.dosenAslab.forEach((d) => {
     const card = document.createElement("div");
-    card.className = "card-hover bg-white border border-line rounded-2xl p-4 flex items-center gap-3";
+    card.className = "utility-card flex items-center gap-3.5";
     card.innerHTML = `
-      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pnc-gold to-pnc-blue flex items-center justify-center font-display font-bold text-sm text-white shrink-0">${d.inisial}</div>
+      <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center t-body-strong text-white shrink-0">${d.inisial}</div>
       <div class="min-w-0">
-        <p class="font-medium text-sm text-ink">${d.nama}</p>
-        <p class="text-xs text-muted">${d.peran}</p>
+        <p class="t-body-strong">${d.nama}</p>
+        <p class="t-caption text-inkMuted48">${d.peran}</p>
       </div>`;
     wrap.appendChild(card);
   });
@@ -485,10 +513,12 @@ function renderDosen() {
 
 /* ------------------------------------------------------------------------
    9. RODA KEBERUNTUNGAN (Randomizer nama mahasiswa)
+   Elemen ini satu-satunya di seluruh halaman yang memakai class
+   `.product-shadow` — mengikuti prinsip "satu shadow untuk produk saja".
    ------------------------------------------------------------------------ */
 let wheelRotation = 0;
 let isSpinning = false;
-const WHEEL_COLORS = ["#0A2463", "#2F63E8", "#F9C80E", "#12203D", "#4C7CF0", "#FBDD5E"];
+const WHEEL_COLORS = ["#001e4d", "#0066cc", "#0071e3", "#12325c", "#2997ff", "#003c8f"];
 
 function buildWheelSVG() {
   const svg = document.getElementById("wheel");
@@ -502,7 +532,7 @@ function buildWheelSVG() {
     const endAngle = startAngle + anglePer;
     const path = describeArc(cx, cy, r, startAngle, endAngle);
     const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
-    html += `<path d="${path}" fill="${color}" stroke="#ffffff" stroke-width="0.6"></path>`;
+    html += `<path d="${path}" fill="${color}" stroke="#1d1d1f" stroke-width="0.5"></path>`;
 
     const midAngle = startAngle + anglePer / 2;
     const labelPos = polarToCartesian(cx, cy, r * 0.62, midAngle);
@@ -540,28 +570,28 @@ function spinWheel() {
   const svg = document.getElementById("wheel");
   svg.style.transform = `rotate(${wheelRotation}deg)`;
 
-  document.getElementById("spinResult").innerHTML = `<p class="text-muted text-sm animate-pulse">Roda sedang berputar...</p>`;
+  document.getElementById("spinResult").innerHTML = `<p class="t-body text-white/50">Roda sedang berputar...</p>`;
   const btn = document.getElementById("btnSpin");
   btn.disabled = true;
-  btn.classList.add("opacity-60", "cursor-not-allowed");
+  btn.style.opacity = "0.6";
 
   setTimeout(() => {
     const nama = CONFIG.mahasiswa[idxTerpilih];
     document.getElementById("spinResult").innerHTML = `
-      <p class="text-xs text-muted">Terpilih</p>
-      <p class="font-display text-2xl font-extrabold text-pnc-blueLight">${nama}</p>`;
+      <p class="t-caption text-white/50">Terpilih</p>
+      <p class="t-display-lg text-primaryDark mt-1">${nama}</p>`;
     tambahPoin(nama, 3);
     renderLeaderboard();
     letupkanConfetti();
     isSpinning = false;
     btn.disabled = false;
-    btn.classList.remove("opacity-60", "cursor-not-allowed");
+    btn.style.opacity = "1";
   }, 5000);
 }
 
 function letupkanConfetti() {
-  const warna = ["#F9C80E", "#0A2463", "#2F63E8", "#FBDD5E"];
-  for (let i = 0; i < 36; i++) {
+  const warna = ["#0066cc", "#2997ff", "#0071e3", "#ffffff"];
+  for (let i = 0; i < 32; i++) {
     const piece = document.createElement("div");
     piece.className = "confetti-piece";
     piece.style.left = Math.random() * 100 + "vw";
@@ -583,16 +613,16 @@ function renderAnon() {
   wrap.innerHTML = "";
 
   if (list.length === 0) {
-    wrap.innerHTML = `<p class="text-muted text-sm col-span-2">Belum ada pesan. Jadilah yang pertama kirim.</p>`;
+    wrap.innerHTML = `<p class="t-body text-inkMuted48 sm:col-span-2">Belum ada pesan. Jadilah yang pertama kirim.</p>`;
     return;
   }
 
   list.forEach((m) => {
     const card = document.createElement("div");
-    card.className = "bg-white border border-line rounded-2xl p-4";
+    card.className = "utility-card !bg-white";
     card.innerHTML = `
-      <p class="text-sm text-ink">${escapeHTML(m.pesan)}</p>
-      <p class="text-[11px] text-muted mt-2 flex items-center gap-1.5">${icon("i-user", "icon icon-sm")} Anonim · ${new Date(m.waktu).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>`;
+      <p class="t-body">${escapeHTML(m.pesan)}</p>
+      <p class="t-fine-print text-inkMuted48 mt-3 flex items-center gap-1.5">${icon("i-user", "icon icon-sm")} Anonim · ${new Date(m.waktu).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</p>`;
     wrap.appendChild(card);
   });
 }
@@ -617,44 +647,41 @@ function renderLeaderboard() {
   const poin = DB.getPoin();
   const sorted = Object.entries(poin).sort((a, b) => b[1] - a[1]);
 
+  const top3Wrap = document.getElementById("leaderboardTop3");
+  if (top3Wrap) {
+    top3Wrap.innerHTML = sorted.slice(0, 3).map(([nama, p], i) => `
+      <div class="flex items-center justify-between utility-card !py-3.5">
+        <span class="flex items-center gap-3 min-w-0">
+          <span class="t-body-strong text-primary w-5">${i + 1}</span>
+          <span class="t-body truncate">${nama}</span>
+        </span>
+        <span class="t-caption-strong text-primary shrink-0">${p} pts</span>
+      </div>`).join("");
+  }
+
   const fullWrap = document.getElementById("leaderboardFull");
-  fullWrap.innerHTML = "";
-  sorted.forEach(([nama, p], i) => {
-    fullWrap.innerHTML += `
-      <div class="card-hover bg-white border border-line rounded-2xl px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span class="font-mono text-sm w-6 text-muted">#${i + 1}</span>
-          <span class="text-sm text-ink">${nama}</span>
+  if (fullWrap) {
+    fullWrap.innerHTML = sorted.map(([nama, p], i) => `
+      <div class="utility-card flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <span class="t-body-strong text-inkMuted48 w-6">${i + 1}</span>
+          <span class="t-body">${nama}</span>
         </div>
-        <span class="font-mono text-pnc-blueLight text-sm">${p} pts</span>
-      </div>`;
-  });
+        <span class="t-body-strong text-primary">${p} pts</span>
+      </div>`).join("");
+  }
 }
 
 
 /* ------------------------------------------------------------------------
-   12. RENDER: OVERVIEW (goals, statistik, tabel tugas, avatar stack)
+   12. RENDER: OVERVIEW (statistik, grid tugas, countdown)
    ------------------------------------------------------------------------ */
-function renderGoals() {
+function renderCountdownAngka() {
   const now = new Date();
-  const goals = [
-    { label: "UTS", target: CONFIG.tanggalUTS, icon: "i-flag", bg: "bg-blue-50", fg: "text-pnc-blueLight" },
-    { label: "UAS", target: CONFIG.tanggalUAS, icon: "i-cap", bg: "bg-yellow-50", fg: "text-yellow-600" },
-    { label: "Libur Semester", target: CONFIG.tanggalLiburSemester, icon: "i-clock", bg: "bg-green-50", fg: "text-green-600" },
-  ];
-
-  const wrap = document.getElementById("goalsList");
-  wrap.innerHTML = goals.map((g) => {
-    const diffMs = new Date(g.target) - now;
-    const hari = Math.max(0, Math.ceil(diffMs / 86400000));
-    return `
-      <div class="card-hover bg-white border border-line rounded-2xl p-3.5 flex flex-col items-start">
-        <div class="w-9 h-9 rounded-full ${g.bg} ${g.fg} flex items-center justify-center mb-3">${icon(g.icon, "icon icon-sm")}</div>
-        <p class="font-display font-bold text-lg text-ink leading-none">${hari}</p>
-        <p class="text-[11px] text-muted mt-1">hari lagi</p>
-        <p class="text-[11px] font-medium text-ink mt-2">${g.label}</p>
-      </div>`;
-  }).join("");
+  const hitung = (target) => Math.max(0, Math.ceil((new Date(target) - now) / 86400000));
+  document.getElementById("cdUTS").textContent = hitung(CONFIG.tanggalUTS);
+  document.getElementById("cdUAS").textContent = hitung(CONFIG.tanggalUAS);
+  document.getElementById("cdLibur").textContent = hitung(CONFIG.tanggalLiburSemester);
 }
 
 function renderOutcomeStats() {
@@ -662,8 +689,8 @@ function renderOutcomeStats() {
   const total = list.length || 1;
   const statuses = [
     { label: "Selesai", color: "#22c55e" },
-    { label: "Sedang Dikerjakan", color: "#2F63E8" },
-    { label: "Belum Dikerjakan", color: "#F9C80E" },
+    { label: "Sedang Dikerjakan", color: "#0066cc" },
+    { label: "Belum Dikerjakan", color: "#eab308" },
     { label: "Terlambat", color: "#ef4444" },
   ];
 
@@ -673,51 +700,41 @@ function renderOutcomeStats() {
     const pct = Math.round((count / total) * 100);
     return `
       <div>
-        <div class="flex items-center justify-between text-xs mb-1.5">
-          <span class="text-ink font-medium">${s.label}</span>
-          <span class="text-muted">${pct}%</span>
+        <div class="flex items-center justify-between t-caption mb-2">
+          <span class="font-medium">${s.label}</span>
+          <span class="text-inkMuted48">${pct}%</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${s.color}"></div></div>
       </div>`;
   }).join("");
 }
 
-function renderOverviewTugasTable() {
+function renderOverviewTugasGrid() {
   const list = ambilTugasDenganStatusTerkini()
     .filter((t) => t.status !== "Selesai")
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-    .slice(0, 5);
+    .slice(0, 3);
 
-  const body = document.getElementById("overviewTugasBody");
+  const wrap = document.getElementById("overviewTugasGrid");
   if (list.length === 0) {
-    body.innerHTML = `<tr><td colspan="4" class="py-4 text-muted text-sm">Semua tugas sudah beres. Mantap.</td></tr>`;
+    wrap.innerHTML = `<p class="t-body text-inkMuted48 sm:col-span-3">Semua tugas sudah beres. Mantap.</p>`;
     return;
   }
 
-  body.innerHTML = list.map((t) => `
-    <tr class="border-b border-line last:border-0">
-      <td class="py-3 text-sm text-ink font-medium max-w-[160px] truncate">${t.judul}</td>
-      <td class="py-3 text-sm text-muted max-w-[140px] truncate">${t.matkul}</td>
-      <td class="py-3 text-sm text-muted whitespace-nowrap">${new Date(t.deadline).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</td>
-      <td class="py-3 text-right"><span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span></td>
-    </tr>`).join("");
-}
-
-function renderAvatarStack() {
-  const wrap = document.getElementById("avatarStack");
-  const subset = CONFIG.mahasiswa.slice(0, 5);
-  const colors = ["#0A2463", "#2F63E8", "#F9C80E", "#12203D", "#4C7CF0"];
-  wrap.innerHTML = subset.map((nama, i) => `
-    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-semibold" style="background:${colors[i % colors.length]}">${inisial(nama)}</div>
-  `).join("") + `<div class="w-9 h-9 rounded-full bg-page border-2 border-white flex items-center justify-center text-[10px] font-semibold text-muted">+${CONFIG.mahasiswa.length - subset.length}</div>`;
+  wrap.innerHTML = list.map((t) => `
+    <div class="utility-card">
+      <span class="t-fine-print px-2.5 py-1 rounded-full border ${badgeClassStatus(t.status)}">${t.status}</span>
+      <p class="t-body-strong mt-3.5">${t.judul}</p>
+      <p class="t-caption text-inkMuted48 mt-1.5">${t.matkul}</p>
+      <p class="t-caption text-primary mt-3 font-mono">${new Date(t.deadline).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}</p>
+    </div>`).join("");
 }
 
 function renderOverview() {
   renderJadwalCarousel();
-  renderGoals();
+  renderCountdownAngka();
   renderOutcomeStats();
-  renderOverviewTugasTable();
-  renderAvatarStack();
+  renderOverviewTugasGrid();
 }
 
 function renderAll() {
@@ -726,11 +743,12 @@ function renderAll() {
   renderOverview();
   renderLeaderboard();
   cekNotifikasi();
+  renderStickyBar();
 }
 
 
 /* ------------------------------------------------------------------------
-   13. NAVIGASI (sidebar desktop + bottom nav mobile)
+   13. NAVIGASI (global nav hitam + menu mobile + sub-nav frosted)
    ------------------------------------------------------------------------ */
 function bindNavButton(btn, tabId) {
   btn.dataset.tab = tabId;
@@ -738,25 +756,23 @@ function bindNavButton(btn, tabId) {
 }
 
 function buildNavigasi() {
-  const sidebar = document.getElementById("sidebarNav");
-  const bottomNav = document.getElementById("bottomNavInner");
-  sidebar.innerHTML = "";
-  bottomNav.innerHTML = "";
+  const desktopNav = document.getElementById("globalNavLinks");
+  const mobileNav = document.getElementById("mobileNavLinks");
+  desktopNav.innerHTML = "";
+  mobileNav.innerHTML = "";
 
   TABS.forEach((t) => {
-    const sBtn = document.createElement("button");
-    sBtn.className = "sidebar-link nav-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted transition-colors";
-    sBtn.innerHTML = `${icon(t.icon)}<span>${t.label}</span>`;
-    bindNavButton(sBtn, t.id);
-    sidebar.appendChild(sBtn);
+    const dBtn = document.createElement("button");
+    dBtn.className = "nav-btn nav-link-item text-white/70 hover:text-white transition-colors";
+    dBtn.textContent = t.label;
+    bindNavButton(dBtn, t.id);
+    desktopNav.appendChild(dBtn);
 
-    if (BOTTOM_TAB_IDS.includes(t.id)) {
-      const bBtn = document.createElement("button");
-      bBtn.className = "bottom-link nav-btn flex flex-col items-center justify-center gap-1 py-2.5 text-muted";
-      bBtn.innerHTML = `${icon(t.icon, "icon icon-sm")}<span>${t.label}</span>`;
-      bindNavButton(bBtn, t.id);
-      bottomNav.appendChild(bBtn);
-    }
+    const mBtn = document.createElement("button");
+    mBtn.className = "nav-btn nav-link-item text-left text-white/70 py-3 border-b border-white/10";
+    mBtn.textContent = t.label;
+    bindNavButton(mBtn, t.id);
+    mobileNav.appendChild(mBtn);
   });
 }
 
@@ -768,10 +784,14 @@ function gotoTab(tabId) {
   document.getElementById(`tab-${tabId}`).classList.add("active");
 
   document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === tabId));
+  document.getElementById("pageTagline").textContent = tab.tagline;
 
-  document.getElementById("pageTitle").textContent = tab.title;
-  document.getElementById("pageSubtitle").textContent = tab.subtitle;
+  // Tombol aksi di sub-nav ("+ Tugas") cuma relevan di tab Tugas & Overview
+  const action = document.getElementById("subNavAction");
+  action.classList.toggle("hidden", !(tabId === "tugas" || tabId === "overview"));
 
+  closeMobileMenu();
+  renderStickyBar();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -779,6 +799,17 @@ document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-tab].nav-btn-inline");
   if (t) gotoTab(t.dataset.tab);
 });
+
+function openMobileMenu() {
+  const menu = document.getElementById("mobileMenu");
+  menu.style.maxHeight = menu.scrollHeight + "px";
+  menu.style.opacity = "1";
+}
+function closeMobileMenu() {
+  const menu = document.getElementById("mobileMenu");
+  menu.style.maxHeight = "0";
+  menu.style.opacity = "0";
+}
 
 
 /* ------------------------------------------------------------------------
@@ -796,36 +827,19 @@ function tutupModalTugas() {
 
 
 /* ------------------------------------------------------------------------
-   15. DARK / LIGHT MODE
-   Tema terang adalah default sesuai referensi desain baru; mode gelap
-   opsional lewat tombol di sidebar.
-   ------------------------------------------------------------------------ */
-function terapkanTema(mode) {
-  document.documentElement.classList.toggle("dark-mode", mode === "dark");
-  document.body.style.background = mode === "dark" ? "#0F1424" : "#F3F5FB";
-  document.body.style.color = mode === "dark" ? "#F3F5FB" : "#101B36";
-  const iconUse = document.querySelector("#themeIconDesktop use");
-  if (iconUse) iconUse.setAttribute("href", mode === "dark" ? "#i-sun" : "#i-moon");
-  const label = document.getElementById("themeLabelDesktop");
-  if (label) label.textContent = mode === "dark" ? "Mode Terang" : "Mode Gelap";
-  DB.setTheme(mode);
-}
-
-
-/* ------------------------------------------------------------------------
-   16. INISIALISASI
+   15. INISIALISASI
    ------------------------------------------------------------------------ */
 function init() {
   buildNavigasi();
   gotoTab("overview");
   renderHariFilter();
+  renderStatusFilterChips();
   buildWheelSVG();
   renderMateri();
   renderDosen();
   renderAnon();
   renderAll();
 
-  terapkanTema(DB.getTheme());
   tickClock();
   setInterval(tickClock, 1000);
 
@@ -835,11 +849,14 @@ function init() {
     resizeTimer = setTimeout(renderJadwal, 200);
   });
 
-  document.getElementById("themeToggleDesktop").addEventListener("click", () => {
-    const mode = DB.getTheme() === "light" ? "dark" : "light";
-    terapkanTema(mode);
+  // --- Menu mobile (hamburger) ---
+  let mobileMenuOpen = false;
+  document.getElementById("hamburgerBtn").addEventListener("click", () => {
+    mobileMenuOpen = !mobileMenuOpen;
+    mobileMenuOpen ? openMobileMenu() : closeMobileMenu();
   });
 
+  // --- Carousel jadwal ---
   document.getElementById("jadwalPrev").addEventListener("click", () => {
     const n = jadwalHariIniList().length || 1;
     jadwalIdx = (jadwalIdx - 1 + n) % n;
@@ -851,10 +868,14 @@ function init() {
     renderJadwalCarousel();
   });
 
+  // --- Roda keberuntungan ---
   document.getElementById("btnSpin").addEventListener("click", spinWheel);
-  document.getElementById("filterStatus").addEventListener("change", renderTugas);
 
-  document.getElementById("btnTambahTugas").addEventListener("click", bukaModalTugas);
+  // --- Pencarian materi ---
+  document.getElementById("materiSearch").addEventListener("input", (e) => renderMateri(e.target.value));
+
+  // --- Tombol aksi sub-nav & modal tugas ---
+  document.getElementById("subNavAction").addEventListener("click", bukaModalTugas);
   document.getElementById("btnBatalTugas").addEventListener("click", tutupModalTugas);
   document.getElementById("btnCloseModal").addEventListener("click", tutupModalTugas);
   document.getElementById("formTugas").addEventListener("submit", (e) => {
@@ -874,6 +895,7 @@ function init() {
     renderAll();
   });
 
+  // --- Form kotak saran anonim ---
   document.getElementById("anonForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const input = document.getElementById("anonInput");
@@ -887,6 +909,7 @@ function init() {
     toast("Pesan terkirim secara anonim", "success");
   });
 
+  // --- Notifikasi ---
   document.getElementById("notifBtn").addEventListener("click", () => {
     const overdue = DB.getTugas().filter((t) => hitungStatusOtomatis(t) === "Terlambat").length;
     toast(overdue > 0 ? `${overdue} tugas melewati deadline` : "Tidak ada tugas mendesak", overdue > 0 ? "error" : "info");
