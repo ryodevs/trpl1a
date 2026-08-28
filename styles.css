@@ -75,42 +75,7 @@ body {
 }
 
 /* Status bar ala iOS */
-.status-bar {
-  position: sticky; top: 0; z-index: 70;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 26px 6px;
-  background: #ffffff;
-  font-weight: 600; font-size: 15px; letter-spacing: -0.2px;
-  font-variant-numeric: tabular-nums;
-}
-.status-icons { display: flex; align-items: center; gap: 6px; }
-.status-icon { width: 16px; height: 16px; }
-.signal-bars { display: flex; align-items: flex-end; gap: 2px; height: 11px; }
-.signal-bars i { display: block; width: 3px; background: #131316; border-radius: 1px; }
-.signal-bars i:nth-child(1) { height: 4px; }
-.signal-bars i:nth-child(2) { height: 6px; }
-.signal-bars i:nth-child(3) { height: 8px; }
-.signal-bars i:nth-child(4) { height: 11px; }
-.status-battery {
-  position: relative;
-  display: inline-block;
-  width: 22px; height: 11px;
-  border: 1.3px solid #131316;
-  border-radius: 3px;
-}
-.status-battery::after {
-  content: '';
-  position: absolute; right: -3px; top: 3px;
-  width: 2px; height: 5px;
-  background: #131316;
-  border-radius: 0 2px 2px 0;
-}
-.status-battery-fill {
-  position: absolute; top: 1.5px; left: 1.5px; bottom: 1.5px;
-  width: 70%;
-  background: #131316;
-  border-radius: 1px;
-}
+
 
 /* Toast */
 .toast-box {
