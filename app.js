@@ -1,12 +1,3 @@
-/* =========================================================================
-   TRPL 1A HUB — app.js
-   Mengikuti sistem desain di DESIGN-apple.md: satu warna aksen (Action
-   Blue), tipografi besar SF-Pro/Inter, tile penuh gantian terang/gelap,
-   tombol pill, dan shadow hanya untuk elemen "produk" (roda keberuntungan).
-   Semua data tersimpan di localStorage lewat objek DB — lihat komentar
-   "GANTI DENGAN FIREBASE DI SINI" untuk titik migrasi backend.
-   ========================================================================= */
-
 /* ------------------------------------------------------------------------
    1. KONFIGURASI & DATA AWAL (SEED DATA)
    ------------------------------------------------------------------------ */
