@@ -86,6 +86,7 @@
 <div class="sr-only-shell" aria-hidden="true">
   <nav id="globalNavLinks"></nav>
   <p id="pageTagline"></p>
+  <span id="clockTime"></span>
   <button id="hamburgerBtn"></button>
   <div id="mobileMenu"><nav id="mobileNavLinks"></nav></div>
   <button id="subNavAction" data-tab="tugas"></button>
@@ -96,16 +97,6 @@
   <div class="device-notch" aria-hidden="true"></div>
 
   <div class="app-scroll" id="appScroll">
-
-    <!-- Status bar ala iOS -->
-    <div class="status-bar">
-      <span id="clockTime" class="status-time">9:41</span>
-      <div class="status-icons">
-        <span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <svg class="icon status-icon"><use href="#i-wifi"/></svg>
-        <span class="status-battery" aria-hidden="true"><span class="status-battery-fill"></span></span>
-      </div>
-    </div>
 
     <!-- Toast -->
     <div id="toastBox" class="toast-box"></div>
@@ -213,7 +204,7 @@
           <div id="leaderboardTop3" class="leaderboard-mini"></div>
         </section>
 
-        <section class="section-block pb-8">
+        <section class="section-block section-block-end">
           <div class="cta-card">
             <div class="cta-icon"><svg class="icon-lg"><use href="#i-shuffle"/></svg></div>
             <h2 class="cta-title">Butuh yang maju presentasi?</h2>
