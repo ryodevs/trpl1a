@@ -59,6 +59,8 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  /* jarak dari atas menggantikan status bar, biar konten tidak mepet notch */
+  padding-top: 44px;
 }
 .app-scroll::-webkit-scrollbar { display: none; }
 
@@ -72,15 +74,13 @@ body {
     box-shadow: none;
   }
   .device-notch { display: none; }
+  .app-scroll { padding-top: 20px; }
 }
-
-/* Status bar ala iOS */
-
 
 /* Toast */
 .toast-box {
   position: fixed;
-  top: 56px; left: 50%;
+  top: 16px; left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   width: calc(100% - 48px);
@@ -91,7 +91,7 @@ body {
 .app-main { padding-bottom: 148px; }
 
 /* ===================== HEADERS ===================== */
-.overview-header { padding: 4px 20px 18px; }
+.overview-header { padding: 0 20px 20px; }
 .overview-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .greeting-eyebrow { font-size: 13px; font-weight: 600; color: #0066cc; margin: 0 0 4px; }
 .greeting-title { font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -0.3px; margin: 0; max-width: 230px; }
@@ -134,7 +134,7 @@ body {
 
 .detail-header {
   display: flex; align-items: center; gap: 12px;
-  padding: 4px 20px 16px;
+  padding: 0 20px 20px;
 }
 .detail-header-text { flex: 1; min-width: 0; }
 .detail-header-title { font-size: 19px; font-weight: 700; letter-spacing: -0.2px; margin: 0; }
@@ -175,7 +175,6 @@ body {
   scrollbar-width: none;
 }
 .chip-row::-webkit-scrollbar, .segmented-scroll::-webkit-scrollbar { display: none; }
-.chip-row { padding-top: 16px; }
 
 .chip {
   flex-shrink: 0;
@@ -192,8 +191,9 @@ body {
 .chip-selected { background: #131316; color: #fff; }
 
 /* ===================== SECTION BLOCKS ===================== */
-.app-body { padding: 4px 20px 20px; }
-.section-block { padding: 22px 20px 6px; }
+.app-body { padding: 0 20px 20px; }
+.section-block { padding: 28px 20px 0; }
+.section-block-end { padding-bottom: 24px; }
 .section-block-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
 .section-eyebrow { font-size: 12px; font-weight: 600; color: #0066cc; margin: 0 0 2px; }
 .section-title { font-size: 19px; font-weight: 700; letter-spacing: -0.2px; margin: 0; }
@@ -238,7 +238,7 @@ body {
   background: #131316;
   color: #fff;
   border-radius: 24px;
-  padding: 26px 22px;
+  padding: 24px;
 }
 .dark-card-eyebrow { font-size: 12px; font-weight: 600; color: #2997ff; margin: 0 0 6px; }
 .dark-card-title { font-size: 19px; font-weight: 700; margin: 0 0 20px; }
@@ -254,7 +254,7 @@ body {
 .cta-card {
   background: #f5f5f7;
   border-radius: 24px;
-  padding: 28px 22px;
+  padding: 24px;
   text-align: center;
   display: flex; flex-direction: column; align-items: center;
 }
@@ -268,7 +268,7 @@ body {
 .cta-body { font-size: 14px; color: #7a7a7a; margin: 8px 0 0; max-width: 280px; }
 
 /* Wheel */
-.wheel-card { background: #131316; border-radius: 28px; padding: 28px; margin-top: 8px; }
+.wheel-card { background: #131316; border-radius: 28px; padding: 24px; margin-top: 8px; }
 .wheel-pointer {
   position: absolute; left: 50%; top: -8px; z-index: 10;
   transform: translateX(-50%);
